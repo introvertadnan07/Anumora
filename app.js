@@ -100,25 +100,28 @@ app.use("/", userRouter);
 app.use("/ai", aiRouter);
 app.use("/chat", chatRouter);
 
-// ⭐ Booking routes
 app.use("/bookings", bookingRouter);
 app.use("/listings/:id/bookings", bookingRouter);
 
 // ======================
-// ERROR HANDLING ✅
+// ERROR HANDLING
 // ======================
 
-// Catch all unknown routes
 app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
 
-// Error middleware
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Something went wrong" } = err;
   res.status(statusCode).render("error", { message });
 });
+
 // ======================
-app.listen(8080, () => {
-  console.log("🚀 Server running on port 8080");
+// SERVER START
+// ======================
+
+const port = process.env.PORT || 8080;
+
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
 });

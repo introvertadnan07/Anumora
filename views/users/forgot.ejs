@@ -1,0 +1,23 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="row">
+  <h1 class="col-6 offset-3">Forgot Password</h1>
+
+  <div class="col-6 offset-3">
+    <form action="/forgot" method="POST">
+      
+      <div class="mb-3">
+        <label class="form-label">Enter your email</label>
+        <input
+          type="email"
+          name="email"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <button class="btn btn-warning">Generate Reset Link</button>
+
+    </form>
+  </div>
+</div>

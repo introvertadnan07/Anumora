@@ -1,0 +1,50 @@
+<% layout("layouts/boilerplate") -%>
+
+<div class="row mt-4 booking-page">
+  <div class="col-md-6 mx-auto">
+
+    <h3 class="mb-4 text-center">Complete Your Booking 🏨</h3>
+
+    <div class="card shadow-sm mb-4">
+      <img
+        src="<%= listing.image?.url || 'https://via.placeholder.com/800x400?text=No+Image' %>"
+        class="card-img-top"
+        style="height: 220px; object-fit: cover;"
+      />
+
+      <div class="card-body">
+        <h5><%= listing.title %></h5>
+        <p class="text-muted"><%= listing.location %>, <%= listing.country %></p>
+        <p class="fw-semibold text-danger">
+          ₹ <%= listing.price.toLocaleString("en-IN") %> / night
+        </p>
+      </div>
+    </div>
+
+    <form action="/listings/<%= listing._id %>/bookings" method="POST">
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Check-In</label>
+          <input type="date" name="checkIn" class="form-control" required />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label>Check-Out</label>
+          <input type="date" name="checkOut" class="form-control" required />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label>Guests</label>
+        <input type="number" name="guests" min="1" value="1" class="form-control" required />
+      </div>
+
+      <button class="btn btn-danger w-100">
+        Confirm Booking
+      </button>
+
+    </form>
+
+  </div>
+</div>

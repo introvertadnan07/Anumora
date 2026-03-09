@@ -1,0 +1,209 @@
+/* ================= GLOBAL ================= */
+
+body {
+    font-family: "Plus Jakarta Sans", serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #ffffff;
+}
+
+.container {
+    flex: 1;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+    height: 5rem;
+    background-color: white;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-nav {
+    gap: 2.5rem;
+}
+
+.nav-link {
+    color: #222222 !important;
+    font-weight: 500;
+    padding: 0.5rem 0;
+}
+
+.nav-link:hover {
+    color: #fe424d !important;
+}
+
+.fa-compass {
+    color: #fe424d;
+    font-size: 2rem;
+}
+
+/* ================= FOOTER ================= */
+
+.f-info {
+    text-align: center;
+    height: 8rem;
+    background-color: #ebebeb;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+/* ================= LISTING CARDS ================= */
+
+.listing-card {
+    border: none !important;
+    border-radius: 1.2rem;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-img-top {
+    border-radius: 1.2rem;
+    width: 100%;
+    height: 20rem;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+/* ================= BUTTONS ================= */
+
+.add-btn,
+.edit-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 0.6rem;
+}
+
+.add-btn:hover,
+.edit-btn:hover {
+    background-color: #e63946 !important;
+}
+
+.btn-dark {
+    border-radius: 0.6rem;
+}
+
+/* ================= SHOW PAGE ================= */
+
+.show-card {
+    border-radius: 1.2rem;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.show-img {
+    height: 45vh;
+    object-fit: cover;
+}
+
+/* ================= REVIEWS ================= */
+
+.review-form textarea {
+    border-radius: 0.7rem;
+    padding: 0.7rem;
+    resize: none;
+}
+
+.review-form textarea:focus {
+    border-color: #fe424d;
+    box-shadow: 0 0 0 0.15rem rgba(254, 66, 77, 0.25);
+}
+
+.review-card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: white;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+.review-username {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.review-comment {
+    margin-top: 0.4rem;
+    color: #444;
+    line-height: 1.4;
+}
+
+.review-delete-btn {
+    margin-top: 0.6rem;
+}
+
+/* ⭐ Star spacing fix */
+.starability-slot {
+    margin-top: 0.4rem;
+    margin-bottom: 0.6rem;
+    transform: scale(0.95);
+}
+
+/* ⭐ Result stars spacing */
+.starability-result {
+    margin: 0.3rem 0;
+}
+
+/* ================= AI SUMMARY ================= */
+
+#aiSummaryText {
+    margin-left: 0.4rem;
+}
+
+/* ================= CHAT ASSISTANT ================= */
+
+#chatInput {
+    border-radius: 0.6rem;
+    padding: 0.7rem;
+}
+
+#chatBtn {
+    border-radius: 0.6rem;
+}
+
+/* ================= MAP ================= */
+
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* ================= ANIMATIONS ================= */
+
+.alert-secondary {
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

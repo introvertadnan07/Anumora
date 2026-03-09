@@ -1,0 +1,255 @@
+<% layout("layouts/boilerplate") -%>
+
+<div class="row mt-3">
+
+  <!-- Title -->
+  <div class="col-md-8 mx-auto">
+    <h3><%= listing.title %></h3>
+  </div>
+
+  <!-- Listing Card -->
+  <div class="card col-md-8 mx-auto show-card listing-card">
+    <img
+      src="<%= listing.image?.url || 'https://via.placeholder.com/800x400?text=No+Image' %>"
+      class="card-img-top show-img"
+      alt="listing_image"
+    />
+
+    <div class="card-body">
+      <p class="card-text">
+        <i><%= listing.owner?.username || "Unknown Owner" %></i>
+      </p>
+
+      <p class="card-text"><%= listing.description %></p>
+
+      <p class="card-text fw-semibold text-danger">
+        ₹ <%= listing.price.toLocaleString("en-IN") %> / night
+      </p>
+
+      <p class="card-text mb-0"><%= listing.location %></p>
+      <p class="card-text text-muted"><%= listing.country %></p>
+    </div>
+  </div>
+
+  <!-- Edit / Delete Buttons -->
+  <% if (currUser && listing.owner && currUser._id.equals(listing.owner._id)) { %>
+    <div class="col-md-8 mx-auto mt-3 d-flex gap-2">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">
+        Edit
+      </a>
+
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+        <button class="btn btn-dark">
+          Delete
+        </button>
+      </form>
+    </div>
+  <% } %>
+
+  <!-- ================= BOOKING BUTTON ================= -->
+  <div class="col-md-8 mx-auto mt-3">
+    <% if (currUser) { %>
+      <a href="/listings/<%= listing._id %>/bookings/new" class="btn btn-danger">
+        Book Now
+      </a>
+    <% } else { %>
+      <a href="/login" class="btn btn-dark">
+        Login to Book
+      </a>
+    <% } %>
+  </div>
+
+  <!-- ================= REVIEWS ================= -->
+  <div class="col-md-8 mx-auto mt-4">
+
+    <% if (currUser) { %>
+      <hr />
+      <h4 class="mb-3">Leave a Review</h4>
+
+      <form
+        action="/listings/<%= listing._id %>/reviews"
+        method="POST"
+        class="needs-validation review-form"
+        novalidate
+      >
+
+        <!-- Rating -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Rating</label>
+
+          <select name="review[rating]" class="form-select" required>
+            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+            <option value="4">⭐⭐⭐⭐ Very Good</option>
+            <option value="3">⭐⭐⭐ Good</option>
+            <option value="2">⭐⭐ Fair</option>
+            <option value="1">⭐ Poor</option>
+          </select>
+        </div>
+
+        <!-- Comment -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Comments</label>
+
+          <textarea
+            name="review[comment]"
+            rows="4"
+            class="form-control"
+            placeholder="Share your experience..."
+            required
+          ></textarea>
+
+          <div class="invalid-feedback">
+            Please add some comments for review
+          </div>
+        </div>
+
+        <button class="btn btn-danger">
+          Submit Review
+        </button>
+      </form>
+
+      <hr />
+    <% } %>
+
+    <!-- ================= ALL REVIEWS ================= -->
+    <% if (listing.reviews && listing.reviews.length > 0) { %>
+      <h5 class="mb-3">All Reviews</h5>
+
+      <div class="row">
+        <% for (let review of listing.reviews) { %>
+          <div class="col-md-6 mb-3">
+            <div class="review-card">
+
+              <div class="review-username">
+                @<%= review.author?.username || "Anonymous" %>
+              </div>
+
+              <!-- ⭐ Font Awesome Stars -->
+              <div class="mb-1">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <% if (i <= review.rating) { %>
+                    <i class="fa-solid fa-star text-warning"></i>
+                  <% } else { %>
+                    <i class="fa-regular fa-star text-warning"></i>
+                  <% } %>
+                <% } %>
+              </div>
+
+              <div class="review-comment">
+                <%= review.comment %>
+              </div>
+
+              <% if (currUser && review.author && currUser._id.equals(review.author._id)) { %>
+                <form
+                  method="POST"
+                  action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                >
+                  <button class="btn btn-sm btn-dark mt-2">
+                    Delete
+                  </button>
+                </form>
+              <% } %>
+
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+
+    <!-- ================= AI SUMMARY ================= -->
+    <hr />
+    <h4>AI Review Summary 🤖</h4>
+
+    <button id="aiSummaryBtn" class="btn btn-dark mb-3">
+      Generate AI Summary
+    </button>
+
+    <div class="alert alert-secondary">
+      <strong>Summary:</strong>
+      <span id="aiSummaryText">Click button to generate summary</span>
+    </div>
+
+    <!-- ================= CHAT ================= -->
+    <hr />
+    <h4>AI Chat 🤖</h4>
+
+    <input
+      type="text"
+      id="chatInput"
+      class="form-control mb-2"
+      placeholder="Ask something about this listing..."
+    />
+
+    <button id="chatBtn" class="btn btn-dark mb-3">
+      Ask AI
+    </button>
+
+    <div class="alert alert-secondary">
+      <strong>Assistant:</strong>
+      <span id="chatReply">Ask a question 👆</span>
+    </div>
+
+  </div>
+
+  <!-- ================= MAP ================= -->
+  <div class="col-md-8 mx-auto mt-4">
+    <h4>Where you'll be</h4>
+    <div id="map"></div>
+  </div>
+
+</div>
+
+<script>
+  mapboxgl.accessToken = "<%= process.env.MAP_TOKEN %>";
+
+  const coordinates = <%- JSON.stringify(listing.geometry?.coordinates || [72.8777, 19.0760]) %>;
+
+  const map = new mapboxgl.Map({
+    container: "map",
+    center: coordinates,
+    zoom: 9,
+  });
+
+  new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
+</script>
+
+<script>
+  document.getElementById("aiSummaryBtn").addEventListener("click", async () => {
+    const output = document.getElementById("aiSummaryText");
+    output.innerText = "Generating summary...";
+
+    try {
+      const res = await fetch(`/ai/summary/<%= listing._id %>`, { method: "POST" });
+      const data = await res.json();
+      output.innerText = data.summary;
+    } catch {
+      output.innerText = "Failed to generate summary.";
+    }
+  });
+</script>
+
+<script>
+  document.getElementById("chatBtn").addEventListener("click", async () => {
+    const input = document.getElementById("chatInput");
+    const reply = document.getElementById("chatReply");
+
+    const question = input.value.trim();
+    if (!question) return;
+
+    reply.innerText = "Thinking...";
+
+    try {
+      const res = await fetch(`/chat/ask/<%= listing._id %>`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+
+      const data = await res.json();
+      reply.innerText = data.reply;
+      input.value = "";
+    } catch {
+      reply.innerText = "AI failed to respond.";
+    }
+  });
+</script>

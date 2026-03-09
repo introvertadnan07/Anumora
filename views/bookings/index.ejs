@@ -1,0 +1,67 @@
+<% layout("layouts/boilerplate") %>
+
+<h3 class="mb-4">My Bookings 🏨</h3>
+
+<% if (bookings.length === 0) { %>
+
+  <div class="alert alert-secondary">
+    You have no bookings yet.
+  </div>
+
+<% } else { %>
+
+  <div class="row">
+    <% for (let booking of bookings) { %>
+
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+
+          <img
+            src="<%= booking.listing.image?.url || 'https://via.placeholder.com/600x400?text=No+Image' %>"
+            class="card-img-top"
+            style="height: 220px; object-fit: cover;"
+          >
+
+          <div class="card-body">
+
+            <h5 class="card-title">
+              <%= booking.listing.title %>
+            </h5>
+
+            <p class="text-muted mb-1">
+              <%= booking.listing.location %>, 
+              <%= booking.listing.country %>
+            </p>
+
+            <p class="mb-1">
+              <strong>Check-In:</strong>
+              <%= booking.checkIn.toDateString() %>
+            </p>
+
+            <p class="mb-1">
+              <strong>Check-Out:</strong>
+              <%= booking.checkOut.toDateString() %>
+            </p>
+
+            <p class="mb-2">
+              <strong>Guests:</strong>
+              <%= booking.guests %>
+            </p>
+
+            <form
+              method="POST"
+              action="/bookings/<%= booking._id %>?_method=DELETE"
+            >
+              <button class="btn btn-sm btn-danger">
+                Cancel Booking
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+    <% } %>
+  </div>
+
+<% } %>

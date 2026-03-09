@@ -1,0 +1,88 @@
+<% layout("layouts/boilerplate") -%>
+
+<div class="row mt-4">
+  <div class="col-md-10 mx-auto">
+
+    <h3 class="mb-4">My Bookings 🏨</h3>
+
+    <% if (bookings.length === 0) { %>
+      <div class="alert alert-secondary">
+        No bookings yet.
+      </div>
+    <% } %>
+
+    <div class="row">
+      <% for (let booking of bookings) { %>
+
+        <div class="col-md-6 mb-3">
+          <div class="card shadow-sm h-100">
+
+            <!-- Listing Image -->
+            <img
+              src="<%= booking.listing?.image?.url || 'https://via.placeholder.com/600x300?text=No+Image' %>"
+              class="card-img-top"
+              style="height: 200px; object-fit: cover;"
+              alt="listing_image"
+            >
+
+            <div class="card-body">
+
+              <!-- Title -->
+              <h5 class="card-title">
+                <%= booking.listing?.title || "Listing" %>
+              </h5>
+
+              <!-- Location -->
+              <p class="text-muted mb-2">
+                <%= booking.listing?.location || "Unknown location" %>,
+                <%= booking.listing?.country || "" %>
+              </p>
+
+              <!-- Dates -->
+              <p class="mb-1">
+                <strong>Check-In:</strong>
+                <%= booking.checkIn.toDateString() %>
+              </p>
+
+              <p class="mb-1">
+                <strong>Check-Out:</strong>
+                <%= booking.checkOut.toDateString() %>
+              </p>
+
+              <!-- Guests -->
+              <p class="mb-3">
+                <strong>Guests:</strong> <%= booking.guests %>
+              </p>
+
+              <!-- Buttons -->
+              <div class="d-flex gap-2">
+
+                <!-- Cancel -->
+                <form 
+                  method="POST" 
+                  action="/bookings/<%= booking._id %>?_method=DELETE"
+                >
+                  <button class="btn btn-sm btn-dark">
+                    Cancel Booking
+                  </button>
+                </form>
+
+                <!-- Download Invoice -->
+                <a 
+                  href="/bookings/invoice/<%= booking._id %>" 
+                  class="btn btn-sm btn-outline-primary"
+                >
+                  Download Invoice
+                </a>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      <% } %>
+    </div>
+
+  </div>
+</div>

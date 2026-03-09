@@ -1,24 +1,61 @@
-<% layout("layouts/boilerplate") %>
+<%- include("../includes/navbar.ejs") %>
 
-<h2>Signup to AnumoraStay</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
 
-<form action="/signup" method="POST">
+        <div class="col-md-6 col-lg-5">
 
-  <div>
-    <label>Username</label>
-    <input type="text" name="username" required />
-  </div>
+            <h3 class="mb-4 text-center">Create Your Account</h3>
 
-  <div>
-    <label>Email</label>
-    <input type="email" name="email" required />
-  </div>
+            <form action="/signup" method="POST">
 
-  <div>
-    <label>Password</label>
-    <input type="password" name="password" required />
-  </div>
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input 
+                        type="text" 
+                        name="username" 
+                        class="form-control" 
+                        placeholder="Enter username"
+                        required
+                    >
+                </div>
 
-  <button type="submit">Sign Up</button>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        class="form-control" 
+                        placeholder="Enter email"
+                        required
+                    >
+                </div>
 
-</form>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        name="password" 
+                        class="form-control" 
+                        placeholder="Enter password"
+                        required
+                    >
+                </div>
+
+                <div class="d-grid">
+                    <button class="btn add-btn">Sign Up</button>
+                </div>
+
+                <p class="text-center mt-3">
+                    Already have an account?
+                    <a href="/login" style="color:#fe424d;">Login</a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<%- include("../includes/footer.ejs") %>

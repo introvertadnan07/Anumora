@@ -1,61 +1,59 @@
-<%- include("../includes/navbar.ejs") %>
+<div class="row justify-content-center mt-5">
+  <div class="col-md-6 col-lg-4">
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
+    <div class="card shadow-sm p-4" style="border-radius: 1rem;">
+      
+      <h3 class="text-center mb-4">Create Your Account</h3>
 
-        <div class="col-md-6 col-lg-5">
+      <form action="/signup" method="POST">
 
-            <h3 class="mb-4 text-center">Create Your Account</h3>
-
-            <form action="/signup" method="POST">
-
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input 
-                        type="text" 
-                        name="username" 
-                        class="form-control" 
-                        placeholder="Enter username"
-                        required
-                    >
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input 
-                        type="email" 
-                        name="email" 
-                        class="form-control" 
-                        placeholder="Enter email"
-                        required
-                    >
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input 
-                        type="password" 
-                        name="password" 
-                        class="form-control" 
-                        placeholder="Enter password"
-                        required
-                    >
-                </div>
-
-                <div class="d-grid">
-                    <button class="btn add-btn">Sign Up</button>
-                </div>
-
-                <p class="text-center mt-3">
-                    Already have an account?
-                    <a href="/login" style="color:#fe424d;">Login</a>
-                </p>
-
-            </form>
-
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input 
+            type="text"
+            name="username"
+            class="form-control"
+            placeholder="Enter username"
+            required
+          >
         </div>
 
-    </div>
-</div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input 
+            type="email"
+            name="email"
+            class="form-control"
+            placeholder="Enter email"
+            required
+          >
+        </div>
 
-<%- include("../includes/footer.ejs") %>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input 
+            type="password"
+            name="password"
+            class="form-control"
+            placeholder="Enter password"
+            required
+          >
+        </div>
+
+        <div class="d-grid">
+          <button class="btn add-btn">Sign Up</button>
+        </div>
+
+        <p class="text-center mt-3 mb-0">
+          Already have an account?
+          <a href="/login" style="color:#fe424d; text-decoration:none;">
+            Login
+          </a>
+        </p>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>

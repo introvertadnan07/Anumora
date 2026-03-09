@@ -1,26 +1,24 @@
-const User = require("../models/user");
+<% layout("layouts/boilerplate") %>
 
-module.exports.renderSignupForm = (req, res) => {
-  res.render("users/signup");
-};
+<h2>Signup to AnumoraStay</h2>
 
-module.exports.signup = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+<form action="/signup" method="POST">
 
-    const newUser = new User({ username, email }); // ✅ IMPORTANT
+  <div>
+    <label>Username</label>
+    <input type="text" name="username" required />
+  </div>
 
-    const registeredUser = await User.register(newUser, password);
+  <div>
+    <label>Email</label>
+    <input type="email" name="email" required />
+  </div>
 
-    req.login(registeredUser, (err) => {
-      if (err) return next(err);
+  <div>
+    <label>Password</label>
+    <input type="password" name="password" required />
+  </div>
 
-      req.flash("success", "Welcome to Wanderlust!");
-      res.redirect("/listings");
-    });
+  <button type="submit">Sign Up</button>
 
-  } catch (e) {
-    req.flash("error", e.message);
-    res.redirect("/signup");
-  }
-};
+</form>

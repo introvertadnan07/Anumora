@@ -22,6 +22,7 @@ const userRouter = require("./routes/user");
 const aiRouter = require("./routes/ai");
 const chatRouter = require("./routes/chat");
 const bookingRouter = require("./routes/bookings");
+const dashboardRouter = require("./routes/dashboard"); // ✅ NEW
 
 // ======================
 // DATABASE
@@ -99,14 +100,13 @@ app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 app.use("/ai", aiRouter);
 app.use("/chat", chatRouter);
-
 app.use("/bookings", bookingRouter);
 app.use("/listings/:id/bookings", bookingRouter);
+app.use("/dashboard", dashboardRouter); // ✅ NEW: /dashboard and /dashboard/admin
 
 // ======================
 // ERROR HANDLING
 // ======================
-
 app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
@@ -119,9 +119,7 @@ app.use((err, req, res, next) => {
 // ======================
 // SERVER START
 // ======================
-
 const port = process.env.PORT || 8080;
-
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
 });

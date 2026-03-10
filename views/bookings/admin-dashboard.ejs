@@ -1,0 +1,422 @@
+<% layout("layouts/boilerplate") %>
+
+<style>
+/* Reuse all variables from dashboard.ejs — same design system */
+:root {
+  --red:#FF385C;--red-light:#fff0f2;--dark:#222;--mid:#717171;
+  --light:#B0B0B0;--bg:#F7F7F7;--white:#fff;--border:#EBEBEB;
+  --green:#008A05;--green-bg:#EDFAF0;--yellow:#FFB400;--yellow-bg:#FFF8E6;
+  --blue:#0057FF;--blue-bg:#EEF3FF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 16px rgba(0,0,0,.10);
+  --radius:16px;--radius-sm:10px;--transition:all 0.22s cubic-bezier(.4,0,.2,1);
+  --sidebar-w:240px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+.db-wrap{display:flex;min-height:calc(100vh - 5rem);margin:-1.5rem;}
+.db-sidebar{width:var(--sidebar-w);background:var(--white);border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:sticky;top:5rem;height:calc(100vh - 5rem);flex-shrink:0;}
+.db-sidebar-logo{padding:20px 20px 14px;border-bottom:1.5px solid var(--border);font-size:15px;font-weight:700;color:var(--dark);}
+.db-sidebar-logo span{color:var(--red);}
+.role-switcher{margin:12px 12px 6px;background:var(--bg);border-radius:8px;padding:3px;display:flex;gap:2px;}
+.role-btn{flex:1;padding:6px 0;border:none;background:transparent;border-radius:6px;font-size:12.5px;font-weight:500;color:var(--mid);cursor:pointer;transition:var(--transition);}
+.role-btn.active{background:var(--white);color:var(--dark);box-shadow:var(--shadow-sm);font-weight:600;}
+.db-nav{flex:1;padding:6px 10px;overflow-y:auto;}
+.nav-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--light);padding:12px 10px 5px;}
+.db-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:var(--transition);color:var(--mid);font-size:13.5px;font-weight:500;margin-bottom:1px;text-decoration:none;border:none;background:none;width:100%;text-align:left;}
+.db-nav-item:hover{background:var(--bg);color:var(--dark);}
+.db-nav-item.active{background:var(--red-light);color:var(--red);font-weight:600;}
+.db-nav-item .nav-icon{width:18px;text-align:center;font-size:13px;}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;}
+.db-user-card{margin:10px;padding:12px;background:var(--bg);border-radius:10px;display:flex;align-items:center;gap:10px;}
+.db-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),#FF6B81);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;flex-shrink:0;}
+.db-user-name{font-size:13px;font-weight:600;}
+.db-user-role{font-size:11px;color:var(--mid);}
+.db-main{flex:1;padding:28px 28px 40px;min-width:0;}
+.db-panel{display:none;}
+.db-panel.active{display:block;animation:fadeUp 0.25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.db-panel-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:20px;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:20px;border:1.5px solid var(--border);box-shadow:var(--shadow-sm);transition:var(--transition);}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.stat-label{font-size:12.5px;color:var(--mid);font-weight:500;}
+.stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.si-red{background:var(--red-light);color:var(--red);}
+.si-green{background:var(--green-bg);color:var(--green);}
+.si-yellow{background:var(--yellow-bg);color:var(--yellow);}
+.si-blue{background:var(--blue-bg);color:var(--blue);}
+.stat-value{font-size:26px;font-weight:700;letter-spacing:-.8px;margin-bottom:3px;}
+.stat-sub{font-size:12px;color:var(--mid);}
+.db-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px;}
+.db-card-head{padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border);}
+.db-card-head h3{font-size:14.5px;font-weight:700;}
+.db-card-body{padding:16px 20px;}
+.grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:20px;}
+.db-table{width:100%;border-collapse:collapse;font-size:13px;}
+.db-table th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mid);font-weight:600;padding:10px 14px;text-align:left;border-bottom:1.5px solid var(--border);background:var(--bg);}
+.db-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.db-table tr:last-child td{border-bottom:none;}
+.db-table tr:hover td{background:var(--bg);}
+.b-status{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;}
+.s-confirmed{background:var(--green-bg);color:var(--green);}
+.s-admin{background:var(--red-light);color:var(--red);}
+.s-user{background:var(--blue-bg);color:var(--blue);}
+.t-avatar{width:30px;height:30px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--red);flex-shrink:0;}
+.flex-c{display:flex;align-items:center;gap:9px;}
+.flex-gap{display:flex;gap:5px;}
+.btn-sm{padding:4px 11px;border-radius:18px;border:1.5px solid var(--border);background:white;font-size:11.5px;font-weight:600;cursor:pointer;transition:var(--transition);font-family:inherit;color:var(--dark);}
+.btn-sm:hover{border-color:var(--dark);}
+.btn-sm.danger{color:var(--red);}
+.btn-sm.danger:hover{border-color:var(--red);background:var(--red-light);}
+.btn-sm.success{color:var(--green);}
+.btn-sm.success:hover{border-color:var(--green);background:var(--green-bg);}
+.chart-area{padding:16px 20px;height:180px;display:flex;align-items:flex-end;gap:8px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.bar{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--red),#FF7A8A);transition:var(--transition);cursor:pointer;position:relative;min-height:4px;}
+.bar.dim{background:linear-gradient(180deg,#E0E0E0,#EBEBEB);}
+.bar:hover{opacity:.82;}
+.bar-tooltip{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:var(--dark);color:white;font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;white-space:nowrap;opacity:0;transition:var(--transition);pointer-events:none;}
+.bar:hover .bar-tooltip{opacity:1;}
+.bar-label{font-size:10.5px;color:var(--mid);font-weight:500;}
+.location-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.location-item:last-child{border-bottom:none;}
+.location-rank{width:22px;height:22px;border-radius:5px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--mid);}
+.location-rank.gold{background:var(--yellow-bg);color:#B07A00;}
+.location-name{flex:1;font-size:13px;font-weight:500;}
+.loc-bar-wrap{width:70px;height:5px;background:var(--bg);border-radius:3px;}
+.loc-bar{height:5px;background:var(--red);border-radius:3px;}
+.loc-count{font-size:12px;font-weight:700;color:var(--mid);margin-left:6px;}
+.activity-feed{padding:0 20px 16px;}
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border-bottom:none;}
+.act-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.dot-green{background:var(--green);}
+.dot-red{background:var(--red);}
+.act-text{font-size:13px;line-height:1.4;}
+.act-time{font-size:11px;color:var(--mid);margin-top:2px;}
+.empty-state{text-align:center;padding:36px 20px;color:var(--mid);}
+.empty-state i{font-size:32px;margin-bottom:8px;display:block;color:var(--border);}
+.empty-state p{font-size:13.5px;}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}.db-sidebar{display:none}.db-wrap{flex-direction:column}}
+</style>
+
+<div class="db-wrap">
+
+  <!-- ───── SIDEBAR ───── -->
+  <aside class="db-sidebar">
+    <div class="db-sidebar-logo">Anumora<span>Stay</span> <small style="font-size:10px;background:var(--red-light);color:var(--red);padding:2px 6px;border-radius:4px;margin-left:4px">Admin</small></div>
+
+    <div class="role-switcher">
+      <button class="role-btn" onclick="window.location='/dashboard'">User</button>
+      <button class="role-btn active">Admin</button>
+    </div>
+
+    <nav class="db-nav">
+      <div class="nav-section-label">Admin</div>
+      <button class="db-nav-item active" onclick="showPanel('pa-overview',this)">
+        <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span> Overview
+      </button>
+      <button class="db-nav-item" onclick="showPanel('pa-users',this)">
+        <span class="nav-icon"><i class="fa-solid fa-users"></i></span> All Users
+        <span class="nav-badge"><%= totalUsers %></span>
+      </button>
+      <button class="db-nav-item" onclick="showPanel('pa-listings',this)">
+        <span class="nav-icon"><i class="fa-solid fa-list"></i></span> All Listings
+        <span class="nav-badge"><%= totalListings %></span>
+      </button>
+      <button class="db-nav-item" onclick="showPanel('pa-bookings',this)">
+        <span class="nav-icon"><i class="fa-solid fa-ticket"></i></span> All Bookings
+        <span class="nav-badge"><%= totalBookings %></span>
+      </button>
+      <button class="db-nav-item" onclick="showPanel('pa-revenue',this)">
+        <span class="nav-icon"><i class="fa-solid fa-indian-rupee-sign"></i></span> Revenue
+      </button>
+      <button class="db-nav-item" onclick="showPanel('pa-activity',this)">
+        <span class="nav-icon"><i class="fa-solid fa-bolt"></i></span> Activity Log
+      </button>
+    </nav>
+
+    <div class="db-user-card">
+      <div class="db-avatar"><%= currUser.username.charAt(0).toUpperCase() %></div>
+      <div>
+        <div class="db-user-name"><%= currUser.username %></div>
+        <div class="db-user-role">Administrator</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ───── MAIN ───── -->
+  <main class="db-main">
+
+    <!-- ══ ADMIN OVERVIEW ══ -->
+    <div class="db-panel active" id="pa-overview">
+      <div class="db-panel-title">Platform Overview</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Users</div><div class="stat-icon si-blue"><i class="fa-solid fa-users"></i></div></div>
+          <div class="stat-value"><%= totalUsers %></div>
+          <div class="stat-sub">Registered accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Listings</div><div class="stat-icon si-red"><i class="fa-regular fa-building"></i></div></div>
+          <div class="stat-value"><%= totalListings %></div>
+          <div class="stat-sub">Active properties</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Bookings</div><div class="stat-icon si-green"><i class="fa-solid fa-ticket"></i></div></div>
+          <div class="stat-value"><%= totalBookings %></div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Platform Revenue</div><div class="stat-icon si-yellow"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+          <div class="stat-value">₹<%= platformRevenue.toLocaleString("en-IN") %></div>
+          <div class="stat-sub">Gross all-time</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="db-card">
+          <div class="db-card-head"><h3>Revenue (Last 6 Months)</h3></div>
+          <% const maxR = Math.max(...revenueChart.map(r=>r.amount), 1) %>
+          <div class="chart-area">
+            <% revenueChart.forEach((r,i) => { %>
+              <% const pct = Math.max((r.amount/maxR)*100, 3) %>
+              <div class="bar-wrap">
+                <div class="bar <%= i<revenueChart.length-1?'dim':'' %>" style="height:<%= pct %>%">
+                  <div class="bar-tooltip">₹<%= r.amount.toLocaleString("en-IN") %></div>
+                </div>
+                <div class="bar-label"><%= r.month.split(' ')[0] %></div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="db-card">
+          <div class="db-card-head"><h3>Top Locations</h3></div>
+          <div class="db-card-body" style="padding:4px 20px">
+            <% const maxLoc = locationAgg[0] ? locationAgg[0].count : 1 %>
+            <% locationAgg.forEach((loc, i) => { %>
+              <div class="location-item">
+                <div class="location-rank <%= i===0?'gold':'' %>"><%= i+1 %></div>
+                <div class="location-name"><%= loc._id || "Unknown" %></div>
+                <div class="loc-bar-wrap"><div class="loc-bar" style="width:<%= (loc.count/maxLoc*100) %>%"></div></div>
+                <div class="loc-count"><%= loc.count %></div>
+              </div>
+            <% }) %>
+            <% if(locationAgg.length === 0) { %><div class="empty-state"><p>No location data yet</p></div><% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <div class="db-card-head"><h3>Recent Activity</h3></div>
+        <div class="activity-feed">
+          <% recentActivity.slice(0,8).forEach(b => { %>
+            <div class="activity-item">
+              <div class="act-dot dot-green"></div>
+              <div>
+                <div class="act-text">
+                  New booking for <b><%= b.listing ? b.listing.title : "a listing" %></b>
+                  <% if(b.user) { %> by <b><%= b.user.username || b.user.email %></b><% } %>
+                </div>
+                <div class="act-time"><%= new Date(b.createdAt).toLocaleString("en-IN") %></div>
+              </div>
+            </div>
+          <% }) %>
+          <% if(recentActivity.length === 0) { %>
+            <div class="empty-state"><i class="fa-solid fa-bolt"></i><p>No activity yet</p></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALL USERS ══ -->
+    <div class="db-panel" id="pa-users">
+      <div class="db-panel-title">User Management</div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>All Users (<%= totalUsers %>)</h3></div>
+        <div style="overflow-x:auto">
+          <table class="db-table">
+            <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody>
+              <% allUsers.forEach(u => { %>
+                <tr>
+                  <td>
+                    <div class="flex-c">
+                      <div class="t-avatar"><%= u.username.charAt(0).toUpperCase() %></div>
+                      <b><%= u.username %></b>
+                      <% if(u._id.equals(currUser._id)) { %><span class="b-status s-confirmed" style="font-size:9px">You</span><% } %>
+                    </div>
+                  </td>
+                  <td><%= u.email %></td>
+                  <td><span class="b-status <%= u.isAdmin ? 's-admin' : 's-user' %>"><%= u.isAdmin ? 'Admin' : 'User' %></span></td>
+                  <td>
+                    <div class="flex-gap">
+                      <% if(!u._id.equals(currUser._id)) { %>
+                        <form method="POST" action="/dashboard/admin/users/<%= u._id %>/toggle-admin">
+                          <button class="btn-sm <%= u.isAdmin ? 'danger' : 'success' %>">
+                            <%= u.isAdmin ? 'Remove Admin' : 'Make Admin' %>
+                          </button>
+                        </form>
+                        <form method="POST" action="/dashboard/admin/users/<%= u._id %>?_method=DELETE" onsubmit="return confirm('Delete user <%= u.username %>?')">
+                          <button class="btn-sm danger">Delete</button>
+                        </form>
+                      <% } else { %>
+                        <span style="font-size:12px;color:var(--mid)">—</span>
+                      <% } %>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALL LISTINGS ══ -->
+    <div class="db-panel" id="pa-listings">
+      <div class="db-panel-title">Listing Management</div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>All Listings (<%= totalListings %>)</h3></div>
+        <% if(allListings.length === 0) { %>
+          <div class="empty-state"><i class="fa-regular fa-building"></i><p>No listings yet</p></div>
+        <% } else { %>
+        <div style="overflow-x:auto">
+          <table class="db-table">
+            <thead><tr><th>Title</th><th>Owner</th><th>Location</th><th>Price/Night</th><th>Actions</th></tr></thead>
+            <tbody>
+              <% allListings.forEach(l => { %>
+                <tr>
+                  <td><b><%= l.title %></b></td>
+                  <td><%= l.owner ? l.owner.username : "—" %></td>
+                  <td><%= l.location %>, <%= l.country %></td>
+                  <td>₹<%= l.price.toLocaleString("en-IN") %></td>
+                  <td>
+                    <div class="flex-gap">
+                      <a href="/listings/<%= l._id %>" class="btn-sm" target="_blank">View</a>
+                      <form method="POST" action="/dashboard/admin/listings/<%= l._id %>?_method=DELETE" onsubmit="return confirm('Remove listing: <%= l.title %>?')">
+                        <button class="btn-sm danger">Remove</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ══ ALL BOOKINGS ══ -->
+    <div class="db-panel" id="pa-bookings">
+      <div class="db-panel-title">Booking Management</div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>All Bookings (<%= totalBookings %>)</h3></div>
+        <% if(allBookings.length === 0) { %>
+          <div class="empty-state"><i class="fa-solid fa-ticket"></i><p>No bookings yet</p></div>
+        <% } else { %>
+        <div style="overflow-x:auto">
+          <table class="db-table">
+            <thead><tr><th>Booking ID</th><th>Guest</th><th>Property</th><th>Check-In</th><th>Check-Out</th><th>Amount</th></tr></thead>
+            <tbody>
+              <% allBookings.forEach(b => { %>
+                <% const nights = Math.ceil((new Date(b.checkOut)-new Date(b.checkIn))/(1000*60*60*24)) %>
+                <% const amt = b.listing ? b.listing.price * nights : 0 %>
+                <tr>
+                  <td style="font-size:11px;color:var(--mid)">#<%= b._id.toString().slice(-6).toUpperCase() %></td>
+                  <td><%= b.user ? b.user.username || b.user.email : "—" %></td>
+                  <td><b><%= b.listing ? b.listing.title : "Listing removed" %></b></td>
+                  <td><%= new Date(b.checkIn).toDateString() %></td>
+                  <td><%= new Date(b.checkOut).toDateString() %></td>
+                  <td><b style="color:var(--green)">₹<%= amt.toLocaleString("en-IN") %></b></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ══ REVENUE ══ -->
+    <div class="db-panel" id="pa-revenue">
+      <div class="db-panel-title">Revenue Analytics</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Platform Revenue</div><div class="stat-icon si-green"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+          <div class="stat-value">₹<%= platformRevenue.toLocaleString("en-IN") %></div>
+          <div class="stat-sub">Gross all-time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">This Month</div><div class="stat-icon si-red"><i class="fa-solid fa-calendar"></i></div></div>
+          <% const thisM = revenueChart[revenueChart.length-1] %>
+          <div class="stat-value">₹<%= thisM ? thisM.amount.toLocaleString("en-IN") : 0 %></div>
+          <div class="stat-sub"><%= thisM ? thisM.month : "" %></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Bookings</div><div class="stat-icon si-blue"><i class="fa-solid fa-ticket"></i></div></div>
+          <div class="stat-value"><%= totalBookings %></div>
+          <div class="stat-sub">All time</div>
+        </div>
+      </div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>Monthly Revenue</h3></div>
+        <% const maxRev2 = Math.max(...revenueChart.map(r=>r.amount), 1) %>
+        <div class="chart-area">
+          <% revenueChart.forEach((r,i) => { %>
+            <% const pct = Math.max((r.amount/maxRev2)*100, 3) %>
+            <div class="bar-wrap">
+              <div class="bar <%= i<revenueChart.length-1?'dim':'' %>" style="height:<%= pct %>%">
+                <div class="bar-tooltip">₹<%= r.amount.toLocaleString("en-IN") %></div>
+              </div>
+              <div class="bar-label"><%= r.month.split(' ')[0] %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ACTIVITY LOG ══ -->
+    <div class="db-panel" id="pa-activity">
+      <div class="db-panel-title">Activity Log</div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>Recent Bookings (Latest Activity)</h3></div>
+        <div class="activity-feed">
+          <% recentActivity.forEach(b => { %>
+            <div class="activity-item">
+              <div class="act-dot dot-green"></div>
+              <div>
+                <div class="act-text">
+                  Booking created for <b><%= b.listing ? b.listing.title : "a listing" %></b>
+                  (<%= b.guests %> guest<%= b.guests > 1 ? 's' : '' %>)
+                  <% if(b.user) { %> by <b><%= b.user.username || b.user.email %></b><% } %>
+                </div>
+                <div class="act-time">
+                  <%= new Date(b.checkIn).toDateString() %> → <%= new Date(b.checkOut).toDateString() %>
+                  &nbsp;·&nbsp; <%= new Date(b.createdAt).toLocaleString("en-IN") %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+          <% if(recentActivity.length === 0) { %>
+            <div class="empty-state"><i class="fa-solid fa-bolt"></i><p>No activity yet</p></div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function showPanel(id, navEl) {
+    document.querySelectorAll('.db-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (navEl) {
+      document.querySelectorAll('.db-nav .db-nav-item').forEach(n => n.classList.remove('active'));
+      navEl.classList.add('active');
+    }
+  }
+</script>

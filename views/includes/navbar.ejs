@@ -20,10 +20,8 @@
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/listings">All Listings</a>
 
-        <!-- ✅ FIXED: Only show "Add New Listing" to logged-in users -->
         <% if (currUser) { %>
           <a class="nav-link" href="/listings/new">Add New Listing</a>
-          <a class="nav-link" href="/bookings/dashboard">My Bookings</a>
         <% } %>
       </div>
 
@@ -32,6 +30,15 @@
           <a class="nav-link" href="/signup">Sign up</a>
           <a class="nav-link" href="/login">Log in</a>
         <% } else { %>
+          <!-- Dashboard button -->
+          <a class="nav-link" href="/dashboard">
+            <i class="fa-solid fa-chart-line" style="margin-right:4px"></i>Dashboard
+          </a>
+          <% if (currUser.isAdmin) { %>
+            <a class="nav-link" href="/dashboard/admin" style="color:#FF385C !important; font-weight:600;">
+              <i class="fa-solid fa-shield-halved" style="margin-right:4px"></i>Admin
+            </a>
+          <% } %>
           <span class="nav-link text-muted">Hi, <%= currUser.username %></span>
           <a class="nav-link" href="/logout">Log out</a>
         <% } %>

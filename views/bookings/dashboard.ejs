@@ -1,88 +1,687 @@
-<% layout("layouts/boilerplate") -%>
+<% layout("layouts/boilerplate") %>
 
-<div class="row mt-4">
-  <div class="col-md-10 mx-auto">
+<style>
+:root {
+  --red: #FF385C; --red-dark: #e00b2f; --red-light: #fff0f2;
+  --dark: #222222; --mid: #717171; --light: #B0B0B0;
+  --bg: #F7F7F7; --white: #FFFFFF; --border: #EBEBEB;
+  --green: #008A05; --green-bg: #EDFAF0;
+  --yellow: #FFB400; --yellow-bg: #FFF8E6;
+  --blue: #0057FF; --blue-bg: #EEF3FF;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --radius: 16px; --radius-sm: 10px;
+  --transition: all 0.22s cubic-bezier(.4,0,.2,1);
+  --sidebar-w: 240px;
+}
+*, *::before, *::after { box-sizing: border-box; }
 
-    <h3 class="mb-4">My Bookings 🏨</h3>
+.db-wrap { display: flex; min-height: calc(100vh - 5rem); margin: -1.5rem; }
 
-    <% if (bookings.length === 0) { %>
-      <div class="alert alert-secondary">
-        No bookings yet.
-      </div>
+/* ── SIDEBAR ── */
+.db-sidebar {
+  width: var(--sidebar-w); background: var(--white);
+  border-right: 1.5px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 5rem; height: calc(100vh - 5rem);
+  flex-shrink: 0;
+}
+.db-sidebar-logo {
+  padding: 20px 20px 14px;
+  border-bottom: 1.5px solid var(--border);
+  font-size: 15px; font-weight: 700; color: var(--dark);
+}
+.db-sidebar-logo span { color: var(--red); }
+
+.role-switcher {
+  margin: 12px 12px 6px; background: var(--bg);
+  border-radius: 8px; padding: 3px; display: flex; gap: 2px;
+}
+.role-btn {
+  flex: 1; padding: 6px 0; border: none; background: transparent;
+  border-radius: 6px; font-size: 12.5px; font-weight: 500;
+  color: var(--mid); cursor: pointer; transition: var(--transition);
+}
+.role-btn.active {
+  background: var(--white); color: var(--dark);
+  box-shadow: var(--shadow-sm); font-weight: 600;
+}
+
+.db-nav { flex: 1; padding: 6px 10px; overflow-y: auto; }
+.nav-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--light); padding: 12px 10px 5px;
+}
+.db-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  transition: var(--transition); color: var(--mid);
+  font-size: 13.5px; font-weight: 500; margin-bottom: 1px;
+  text-decoration: none; border: none; background: none; width: 100%;
+  text-align: left;
+}
+.db-nav-item:hover { background: var(--bg); color: var(--dark); }
+.db-nav-item.active { background: var(--red-light); color: var(--red); font-weight: 600; }
+.db-nav-item .nav-icon { width: 18px; text-align: center; font-size: 13px; }
+.nav-badge {
+  margin-left: auto; background: var(--red); color: white;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;
+}
+
+.db-user-card {
+  margin: 10px; padding: 12px; background: var(--bg);
+  border-radius: 10px; display: flex; align-items: center; gap: 10px;
+}
+.db-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--red), #FF6B81);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.db-user-name { font-size: 13px; font-weight: 600; }
+.db-user-role { font-size: 11px; color: var(--mid); }
+
+/* ── MAIN ── */
+.db-main { flex: 1; padding: 28px 28px 40px; min-width: 0; }
+
+/* ── PANELS ── */
+.db-panel { display: none; }
+.db-panel.active { display: block; animation: fadeUp 0.25s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.db-panel-title {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 20px;
+}
+
+/* ── STATS GRID ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 22px;
+}
+.stat-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px; border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm); transition: var(--transition);
+}
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.stat-label { font-size: 12.5px; color: var(--mid); font-weight: 500; }
+.stat-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.si-red { background: var(--red-light); color: var(--red); }
+.si-green { background: var(--green-bg); color: var(--green); }
+.si-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.si-blue { background: var(--blue-bg); color: var(--blue); }
+.stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; margin-bottom: 3px; }
+.stat-sub { font-size: 12px; color: var(--mid); }
+
+/* ── CARD ── */
+.db-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px;
+}
+.db-card-head {
+  padding: 18px 20px 14px; display: flex; align-items: center;
+  justify-content: space-between; border-bottom: 1.5px solid var(--border);
+}
+.db-card-head h3 { font-size: 14.5px; font-weight: 700; }
+.db-card-head .see-all { font-size: 12.5px; color: var(--red); font-weight: 600; cursor: pointer; text-decoration: none; }
+.db-card-body { padding: 16px 20px; }
+
+/* ── GRID ── */
+.grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
+
+/* ── BOOKING LIST ── */
+.booking-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1.5px solid var(--border);
+  transition: var(--transition);
+}
+.booking-item:last-child { border-bottom: none; }
+.booking-emoji { font-size: 26px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 10px; flex-shrink: 0; }
+.booking-info { flex: 1; min-width: 0; }
+.booking-name { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.booking-meta { font-size: 12px; color: var(--mid); margin-top: 2px; }
+.booking-right { text-align: right; flex-shrink: 0; }
+.booking-price { font-size: 13.5px; font-weight: 700; }
+.b-status {
+  font-size: 10.5px; font-weight: 600; padding: 2px 8px;
+  border-radius: 20px; margin-top: 3px; display: inline-block;
+}
+.s-confirmed { background: var(--green-bg); color: var(--green); }
+.s-pending   { background: var(--yellow-bg); color: #B07A00; }
+.s-cancelled { background: #FFF0F0; color: #CC0000; }
+
+/* ── TABLE ── */
+.db-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.db-table th {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--mid); font-weight: 600; padding: 10px 14px;
+  text-align: left; border-bottom: 1.5px solid var(--border); background: var(--bg);
+}
+.db-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tr:hover td { background: var(--bg); }
+
+/* ── LISTING CARDS ── */
+.listings-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; padding: 16px 20px; }
+.listing-mini { border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); transition: var(--transition); }
+.listing-mini:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.listing-thumb-area {
+  height: 100px; background: linear-gradient(135deg, #FFE0E4, #FFB3BC);
+  display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative;
+}
+.listing-thumb-area img { width: 100%; height: 100%; object-fit: cover; }
+.listing-active-badge {
+  position: absolute; top: 7px; right: 7px; background: white;
+  border-radius: 20px; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; color: var(--green);
+}
+.listing-mini-info { padding: 9px 11px; }
+.listing-mini-title { font-size: 12.5px; font-weight: 600; }
+.listing-mini-sub { font-size: 11.5px; color: var(--mid); margin-top: 1px; }
+.listing-mini-price { font-size: 13px; font-weight: 700; margin-top: 5px; }
+.listing-mini-price span { font-weight: 400; color: var(--mid); font-size: 11px; }
+.listing-mini-actions { display: flex; gap: 5px; margin-top: 7px; }
+
+/* ── REVIEW ── */
+.review-item { padding: 13px 0; border-bottom: 1.5px solid var(--border); }
+.review-item:last-child { border-bottom: none; }
+.review-top { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.r-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--blue-bg); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--blue); flex-shrink: 0;
+}
+.r-name { font-size: 13px; font-weight: 600; }
+.r-date { font-size: 11px; color: var(--mid); }
+.r-stars { margin-left: auto; color: var(--yellow); font-size: 12px; }
+.r-text { font-size: 13px; color: #444; line-height: 1.5; }
+.r-listing { font-size: 11.5px; color: var(--mid); margin-top: 4px; }
+.r-listing span { color: var(--red); font-weight: 500; }
+
+/* ── REVENUE CHART ── */
+.chart-area {
+  padding: 16px 20px; height: 180px; display: flex;
+  align-items: flex-end; gap: 8px;
+}
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.bar {
+  width: 100%; border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, var(--red), #FF7A8A);
+  transition: var(--transition); cursor: pointer; position: relative;
+  min-height: 4px;
+}
+.bar.dim { background: linear-gradient(180deg, #E0E0E0, #EBEBEB); }
+.bar:hover { opacity: 0.82; }
+.bar-tooltip {
+  position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+  background: var(--dark); color: white; font-size: 10px; font-weight: 600;
+  padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+  opacity: 0; transition: var(--transition); pointer-events: none;
+}
+.bar:hover .bar-tooltip { opacity: 1; }
+.bar-label { font-size: 10.5px; color: var(--mid); font-weight: 500; }
+
+/* ── PROFILE ── */
+.profile-banner {
+  background: linear-gradient(135deg, #FF385C, #FF6B6B);
+  border-radius: var(--radius); padding: 28px; color: white;
+  position: relative; overflow: hidden; margin-bottom: 18px;
+}
+.profile-banner::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 140px; height: 140px; background: rgba(255,255,255,0.07); border-radius: 50%;
+}
+.profile-av-lg {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700; border: 2px solid rgba(255,255,255,0.45); margin-bottom: 12px;
+}
+.profile-banner h2 { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+.profile-banner p { font-size: 13px; opacity: 0.85; }
+
+.profile-stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 18px; }
+.profile-stat-box {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px; text-align: center;
+}
+.profile-stat-box .val { font-size: 22px; font-weight: 700; }
+.profile-stat-box .lbl { font-size: 11.5px; color: var(--mid); margin-top: 2px; }
+
+.form-grp { margin-bottom: 16px; }
+.form-lbl { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; display: block; color: var(--dark); }
+.form-inp {
+  width: 100%; padding: 10px 13px; border: 1.5px solid var(--border);
+  border-radius: 9px; font-size: 13.5px; outline: none;
+  transition: var(--transition); background: var(--bg); color: var(--dark);
+  font-family: inherit;
+}
+.form-inp:focus { border-color: var(--dark); background: var(--white); }
+.form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  background: var(--dark); color: white; border: none;
+  padding: 10px 24px; border-radius: 22px; font-size: 13.5px;
+  font-weight: 600; cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+.btn-primary:hover { background: var(--red); }
+.btn-sm {
+  padding: 4px 11px; border-radius: 18px; border: 1.5px solid var(--border);
+  background: white; font-size: 11.5px; font-weight: 600; cursor: pointer;
+  transition: var(--transition); font-family: inherit; color: var(--dark);
+}
+.btn-sm:hover { border-color: var(--dark); }
+.btn-sm.danger { color: var(--red); }
+.btn-sm.danger:hover { border-color: var(--red); background: var(--red-light); }
+.flex-gap { display: flex; gap: 6px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--mid);
+}
+.empty-state i { font-size: 36px; margin-bottom: 10px; display: block; color: var(--border); }
+.empty-state p { font-size: 14px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .listings-grid { grid-template-columns: repeat(2,1fr); }
+  .db-sidebar { display: none; }
+  .db-wrap { flex-direction: column; }
+}
+</style>
+
+<div class="db-wrap">
+
+  <!-- ───── SIDEBAR ───── -->
+  <aside class="db-sidebar">
+    <div class="db-sidebar-logo">Anumora<span>Stay</span></div>
+
+    <% if (isAdmin) { %>
+    <div class="role-switcher">
+      <button class="role-btn active" id="btn-user" onclick="switchRole('user')">User</button>
+      <button class="role-btn" id="btn-admin" onclick="switchRole('admin')">Admin</button>
+    </div>
     <% } %>
 
-    <div class="row">
-      <% for (let booking of bookings) { %>
+    <!-- USER NAV -->
+    <nav class="db-nav" id="nav-user">
+      <div class="nav-section-label">Overview</div>
+      <button class="db-nav-item active" onclick="showPanel('p-overview',this)">
+        <span class="nav-icon"><i class="fa-solid fa-house"></i></span> Overview
+      </button>
+      <button class="db-nav-item" onclick="showPanel('p-bookings',this)">
+        <span class="nav-icon"><i class="fa-regular fa-calendar-check"></i></span> My Bookings
+        <% if(myBookings.length > 0){ %><span class="nav-badge"><%= myBookings.length %></span><% } %>
+      </button>
+      <div class="nav-section-label">Host</div>
+      <button class="db-nav-item" onclick="showPanel('p-listings',this)">
+        <span class="nav-icon"><i class="fa-regular fa-building"></i></span> My Listings
+      </button>
+      <button class="db-nav-item" onclick="showPanel('p-revenue',this)">
+        <span class="nav-icon"><i class="fa-solid fa-indian-rupee-sign"></i></span> Revenue
+      </button>
+      <button class="db-nav-item" onclick="showPanel('p-reviews',this)">
+        <span class="nav-icon"><i class="fa-regular fa-star"></i></span> Reviews
+        <% if(myReviews.length > 0){ %><span class="nav-badge"><%= myReviews.length %></span><% } %>
+      </button>
+      <div class="nav-section-label">Account</div>
+      <button class="db-nav-item" onclick="showPanel('p-profile',this)">
+        <span class="nav-icon"><i class="fa-regular fa-user"></i></span> Profile & Settings
+      </button>
+    </nav>
 
-        <div class="col-md-6 mb-3">
-          <div class="card shadow-sm h-100">
+    <div class="db-user-card">
+      <div class="db-avatar"><%= currUser.username.charAt(0).toUpperCase() %></div>
+      <div>
+        <div class="db-user-name"><%= currUser.username %></div>
+        <div class="db-user-role"><%= isAdmin ? 'Admin • Host' : 'Guest • Host' %></div>
+      </div>
+    </div>
+  </aside>
 
-            <!-- Listing Image -->
-            <img
-              src="<%= booking.listing?.image?.url || 'https://via.placeholder.com/600x300?text=No+Image' %>"
-              class="card-img-top"
-              style="height: 200px; object-fit: cover;"
-              alt="listing_image"
-            >
+  <!-- ───── MAIN ───── -->
+  <main class="db-main">
 
-            <div class="card-body">
+    <!-- ══ OVERVIEW ══ -->
+    <div class="db-panel active" id="p-overview">
+      <div class="db-panel-title">Welcome back, <%= currUser.username %> 👋</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">My Bookings</div><div class="stat-icon si-red"><i class="fa-regular fa-calendar-check"></i></div></div>
+          <div class="stat-value"><%= myBookings.length %></div>
+          <div class="stat-sub">Total stays booked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">My Listings</div><div class="stat-icon si-blue"><i class="fa-regular fa-building"></i></div></div>
+          <div class="stat-value"><%= myListings.length %></div>
+          <div class="stat-sub">Properties you host</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Revenue Earned</div><div class="stat-icon si-green"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+          <div class="stat-value">₹<%= totalRevenue.toLocaleString("en-IN") %></div>
+          <div class="stat-sub">All-time host earnings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Avg Rating</div><div class="stat-icon si-yellow"><i class="fa-solid fa-star"></i></div></div>
+          <div class="stat-value"><%= avgRating %></div>
+          <div class="stat-sub">Based on <%= reviewCount %> reviews</div>
+        </div>
+      </div>
 
-              <!-- Title -->
-              <h5 class="card-title">
-                <%= booking.listing?.title || "Listing" %>
-              </h5>
-
-              <!-- Location -->
-              <p class="text-muted mb-2">
-                <%= booking.listing?.location || "Unknown location" %>,
-                <%= booking.listing?.country || "" %>
-              </p>
-
-              <!-- Dates -->
-              <p class="mb-1">
-                <strong>Check-In:</strong>
-                <%= booking.checkIn.toDateString() %>
-              </p>
-
-              <p class="mb-1">
-                <strong>Check-Out:</strong>
-                <%= booking.checkOut.toDateString() %>
-              </p>
-
-              <!-- Guests -->
-              <p class="mb-3">
-                <strong>Guests:</strong> <%= booking.guests %>
-              </p>
-
-              <!-- Buttons -->
-              <div class="d-flex gap-2">
-
-                <!-- Cancel -->
-                <form 
-                  method="POST" 
-                  action="/bookings/<%= booking._id %>?_method=DELETE"
-                >
-                  <button class="btn btn-sm btn-dark">
-                    Cancel Booking
-                  </button>
-                </form>
-
-                <!-- Download Invoice -->
-                <a 
-                  href="/bookings/invoice/<%= booking._id %>" 
-                  class="btn btn-sm btn-outline-primary"
-                >
-                  Download Invoice
-                </a>
-
-              </div>
-
-            </div>
+      <div class="grid-2">
+        <!-- Recent Bookings -->
+        <div class="db-card">
+          <div class="db-card-head">
+            <h3>Recent Bookings</h3>
+            <button class="see-all" onclick="showPanel('p-bookings',null)">See all →</button>
+          </div>
+          <div class="db-card-body">
+            <% if(myBookings.length === 0) { %>
+              <div class="empty-state"><i class="fa-regular fa-calendar"></i><p>No bookings yet</p></div>
+            <% } else { %>
+              <% myBookings.slice(0,4).forEach(b => { %>
+                <% const nights = b.listing ? Math.ceil((new Date(b.checkOut)-new Date(b.checkIn))/(1000*60*60*24)) : 0 %>
+                <% const amt = b.listing ? (b.listing.price * nights) : 0 %>
+                <div class="booking-item">
+                  <div class="booking-emoji">🏠</div>
+                  <div class="booking-info">
+                    <div class="booking-name"><%= b.listing ? b.listing.title : "Listing removed" %></div>
+                    <div class="booking-meta">
+                      <%= new Date(b.checkIn).toDateString() %> → <%= new Date(b.checkOut).toDateString() %> · <%= b.guests %> guest(s)
+                    </div>
+                  </div>
+                  <div class="booking-right">
+                    <div class="booking-price">₹<%= amt.toLocaleString("en-IN") %></div>
+                    <span class="b-status s-confirmed">Confirmed</span>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
           </div>
         </div>
 
-      <% } %>
+        <!-- Latest Reviews -->
+        <div class="db-card">
+          <div class="db-card-head"><h3>Latest Reviews</h3></div>
+          <div class="db-card-body">
+            <% if(myReviews.length === 0) { %>
+              <div class="empty-state"><i class="fa-regular fa-star"></i><p>No reviews yet</p></div>
+            <% } else { %>
+              <% myReviews.slice(0,3).forEach(r => { %>
+                <div class="review-item">
+                  <div class="review-top">
+                    <div class="r-avatar"><%= r.author ? r.author.username.charAt(0).toUpperCase() : '?' %></div>
+                    <div>
+                      <div class="r-name"><%= r.author ? r.author.username : 'Anonymous' %></div>
+                      <div class="r-date"><%= new Date(r.createdAt).toDateString() %></div>
+                    </div>
+                    <div class="r-stars">
+                      <% for(let i=1;i<=5;i++){ %><%= i<=r.rating ? '★' : '☆' %><% } %>
+                    </div>
+                  </div>
+                  <div class="r-text">"<%= r.comment %>"</div>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </div>
+      </div>
     </div>
 
-  </div>
+    <!-- ══ MY BOOKINGS ══ -->
+    <div class="db-panel" id="p-bookings">
+      <div class="db-panel-title">My Bookings</div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>All Bookings (<%= myBookings.length %>)</h3></div>
+        <% if(myBookings.length === 0) { %>
+          <div class="empty-state"><i class="fa-regular fa-calendar"></i><p>No bookings yet. <a href="/listings">Browse listings →</a></p></div>
+        <% } else { %>
+        <div style="overflow-x:auto">
+          <table class="db-table">
+            <thead><tr><th>Property</th><th>Check-In</th><th>Check-Out</th><th>Nights</th><th>Guests</th><th>Amount</th><th>Actions</th></tr></thead>
+            <tbody>
+              <% myBookings.forEach(b => { %>
+                <% const nights = Math.ceil((new Date(b.checkOut)-new Date(b.checkIn))/(1000*60*60*24)) %>
+                <% const amt = b.listing ? b.listing.price * nights : 0 %>
+                <tr>
+                  <td><b><%= b.listing ? b.listing.title : "Listing removed" %></b><br><small style="color:var(--mid)"><%= b.listing ? b.listing.location : '' %></small></td>
+                  <td><%= new Date(b.checkIn).toDateString() %></td>
+                  <td><%= new Date(b.checkOut).toDateString() %></td>
+                  <td><%= nights %></td>
+                  <td><%= b.guests %></td>
+                  <td><b>₹<%= amt.toLocaleString("en-IN") %></b></td>
+                  <td>
+                    <div class="flex-gap">
+                      <% if(b.invoiceUrl) { %><a href="<%= b.invoiceUrl %>" class="btn-sm" target="_blank">Invoice</a><% } %>
+                      <form method="POST" action="/bookings/<%= b._id %>?_method=DELETE" onsubmit="return confirm('Cancel this booking?')">
+                        <button class="btn-sm danger">Cancel</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ══ MY LISTINGS ══ -->
+    <div class="db-panel" id="p-listings">
+      <div class="db-panel-title">My Listings</div>
+      <div class="db-card">
+        <div class="db-card-head">
+          <h3>Properties (<%= myListings.length %>)</h3>
+          <a href="/listings/new" class="see-all">+ Add New</a>
+        </div>
+        <% if(myListings.length === 0) { %>
+          <div class="empty-state"><i class="fa-regular fa-building"></i><p>No listings yet. <a href="/listings/new">Create your first listing →</a></p></div>
+        <% } else { %>
+        <div class="listings-grid">
+          <% myListings.forEach(l => { %>
+            <div class="listing-mini">
+              <div class="listing-thumb-area">
+                <% if(l.image && l.image.url) { %>
+                  <img src="<%= l.image.url %>" alt="<%= l.title %>">
+                <% } else { %>🏠<% } %>
+                <span class="listing-active-badge">Active</span>
+              </div>
+              <div class="listing-mini-info">
+                <div class="listing-mini-title"><%= l.title %></div>
+                <div class="listing-mini-sub"><%= l.location %>, <%= l.country %></div>
+                <div class="listing-mini-price">₹<%= l.price.toLocaleString("en-IN") %> <span>/ night</span></div>
+                <div class="listing-mini-actions">
+                  <a href="/listings/<%= l._id %>/edit" class="btn-sm">Edit</a>
+                  <form method="POST" action="/listings/<%= l._id %>?_method=DELETE" onsubmit="return confirm('Delete this listing?')">
+                    <button class="btn-sm danger">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ══ REVENUE ══ -->
+    <div class="db-panel" id="p-revenue">
+      <div class="db-panel-title">Revenue</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Earned</div><div class="stat-icon si-green"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+          <div class="stat-value">₹<%= totalRevenue.toLocaleString("en-IN") %></div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Host Bookings</div><div class="stat-icon si-blue"><i class="fa-solid fa-ticket"></i></div></div>
+          <div class="stat-value"><%= hostBookings.length %></div>
+          <div class="stat-sub">Bookings received</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">This Month</div><div class="stat-icon si-red"><i class="fa-solid fa-calendar"></i></div></div>
+          <% const thisMonth = revenueChart[revenueChart.length-1] %>
+          <div class="stat-value">₹<%= thisMonth ? thisMonth.amount.toLocaleString("en-IN") : 0 %></div>
+          <div class="stat-sub"><%= thisMonth ? thisMonth.month : '' %></div>
+        </div>
+      </div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>Monthly Revenue (Last 6 Months)</h3></div>
+        <% const maxRev = Math.max(...revenueChart.map(r=>r.amount), 1) %>
+        <div class="chart-area">
+          <% revenueChart.forEach((r, i) => { %>
+            <% const pct = Math.max((r.amount/maxRev)*100, 3) %>
+            <div class="bar-wrap">
+              <div class="bar <%= i < revenueChart.length-1 ? 'dim' : '' %>" style="height:<%= pct %>%">
+                <div class="bar-tooltip">₹<%= r.amount.toLocaleString("en-IN") %></div>
+              </div>
+              <div class="bar-label"><%= r.month.split(' ')[0] %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <div class="db-card-head"><h3>Booking History (Host)</h3></div>
+        <% if(hostBookings.length === 0) { %>
+          <div class="empty-state"><i class="fa-solid fa-indian-rupee-sign"></i><p>No revenue yet — guests haven't booked your listings</p></div>
+        <% } else { %>
+        <div style="overflow-x:auto">
+          <table class="db-table">
+            <thead><tr><th>Listing</th><th>Guest</th><th>Dates</th><th>Nights</th><th>Amount</th><th>Booked On</th></tr></thead>
+            <tbody>
+              <% hostBookings.forEach(b => { %>
+                <% const nights = Math.ceil((new Date(b.checkOut)-new Date(b.checkIn))/(1000*60*60*24)) %>
+                <% const amt = b.listing ? b.listing.price * nights : 0 %>
+                <tr>
+                  <td><b><%= b.listing ? b.listing.title : "—" %></b></td>
+                  <td><%= b.user ? b.user.username || b.user.email : "—" %></td>
+                  <td><%= new Date(b.checkIn).toDateString() %> → <%= new Date(b.checkOut).toDateString() %></td>
+                  <td><%= nights %></td>
+                  <td><b style="color:var(--green)">₹<%= amt.toLocaleString("en-IN") %></b></td>
+                  <td><%= new Date(b.createdAt).toDateString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- ══ REVIEWS ══ -->
+    <div class="db-panel" id="p-reviews">
+      <div class="db-panel-title">Reviews Received</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Reviews</div><div class="stat-icon si-yellow"><i class="fa-regular fa-star"></i></div></div>
+          <div class="stat-value"><%= reviewCount %></div>
+          <div class="stat-sub">On all your listings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Average Rating</div><div class="stat-icon si-red"><i class="fa-solid fa-star"></i></div></div>
+          <div class="stat-value"><%= avgRating %></div>
+          <div class="stat-sub">Out of 5.0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">5★ Reviews</div><div class="stat-icon si-green"><i class="fa-solid fa-trophy"></i></div></div>
+          <div class="stat-value"><%= myReviews.filter(r=>r.rating===5).length %></div>
+          <div class="stat-sub">Perfect ratings</div>
+        </div>
+      </div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>All Reviews</h3></div>
+        <div class="db-card-body">
+          <% if(myReviews.length === 0) { %>
+            <div class="empty-state"><i class="fa-regular fa-star"></i><p>No reviews on your listings yet</p></div>
+          <% } else { %>
+            <% myReviews.forEach(r => { %>
+              <div class="review-item">
+                <div class="review-top">
+                  <div class="r-avatar"><%= r.author ? r.author.username.charAt(0).toUpperCase() : '?' %></div>
+                  <div>
+                    <div class="r-name"><%= r.author ? r.author.username : 'Anonymous' %></div>
+                    <div class="r-date"><%= new Date(r.createdAt).toDateString() %></div>
+                  </div>
+                  <div class="r-stars">
+                    <% for(let i=1;i<=5;i++){ %><%= i<=r.rating ? '★' : '☆' %><% } %>
+                  </div>
+                </div>
+                <div class="r-text">"<%= r.comment %>"</div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROFILE ══ -->
+    <div class="db-panel" id="p-profile">
+      <div class="db-panel-title">Profile & Settings</div>
+      <div class="profile-banner">
+        <div class="profile-av-lg"><%= currUser.username.charAt(0).toUpperCase() %></div>
+        <h2><%= currUser.username %></h2>
+        <p><%= currUser.email %> · <%= isAdmin ? 'Administrator' : 'Member' %></p>
+      </div>
+      <div class="profile-stats-row">
+        <div class="profile-stat-box"><div class="val"><%= myBookings.length %></div><div class="lbl">Bookings</div></div>
+        <div class="profile-stat-box"><div class="val"><%= myListings.length %></div><div class="lbl">Listings</div></div>
+        <div class="profile-stat-box"><div class="val"><%= avgRating %>★</div><div class="lbl">Avg Rating</div></div>
+      </div>
+      <div class="db-card" style="margin-bottom:16px">
+        <div class="db-card-head"><h3>Account Info</h3></div>
+        <div class="db-card-body">
+          <div class="form-row2">
+            <div class="form-grp">
+              <label class="form-lbl">Username</label>
+              <input class="form-inp" value="<%= currUser.username %>" readonly>
+            </div>
+            <div class="form-grp">
+              <label class="form-lbl">Email</label>
+              <input class="form-inp" value="<%= currUser.email %>" readonly>
+            </div>
+          </div>
+          <small style="color:var(--mid);font-size:12px">To change username or email, contact support.</small>
+        </div>
+      </div>
+      <div class="db-card">
+        <div class="db-card-head"><h3>Change Password</h3></div>
+        <div class="db-card-body">
+          <p style="font-size:13px;color:var(--mid);margin-bottom:14px">Use the forgot password flow to reset your password securely.</p>
+          <a href="/forgot" class="btn-primary" style="text-decoration:none;display:inline-block">Reset Password →</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
 </div>
+
+<script>
+  // Panel switching
+  function showPanel(id, navEl) {
+    document.querySelectorAll('.db-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (navEl) {
+      document.querySelectorAll('#nav-user .db-nav-item').forEach(n => n.classList.remove('active'));
+      navEl.classList.add('active');
+    }
+  }
+
+  // Role switcher — redirect to admin dashboard
+  function switchRole(role) {
+    if (role === 'admin') window.location.href = '/dashboard/admin';
+    else window.location.href = '/dashboard';
+    document.getElementById('btn-user').classList.toggle('active', role === 'user');
+    document.getElementById('btn-admin').classList.toggle('active', role === 'admin');
+  }
+</script>

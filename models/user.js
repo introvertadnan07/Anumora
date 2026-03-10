@@ -8,7 +8,13 @@ const userSchema = new Schema({
     required: true,
   },
 
-  // ✅ Password reset fields
+  // ✅ NEW: Admin field — set manually in DB or via seed script
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+
+  // Password reset fields
   resetToken: String,
   resetTokenExpiry: Date,
 });

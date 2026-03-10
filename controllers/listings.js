@@ -1,6 +1,26 @@
 const Listing = require("../models/listing");
 const Booking = require("../models/booking");
 
+// ✅ FIXED: Helper to geocode a location string using Mapbox Geocoding API
+async function geocodeLocation(locationStr, countryStr) {
+  try {
+    const query = encodeURIComponent(`${locationStr}, ${countryStr}`);
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${process.env.MAP_TOKEN}&limit=1`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.features && data.features.length > 0) {
+      return data.features[0].geometry.coordinates; // [lng, lat]
+    }
+  } catch (err) {
+    console.error("Geocoding error:", err.message);
+  }
+
+  // Fallback: center of India if geocoding fails
+  return [78.9629, 20.5937];
+}
+
 // INDEX
 module.exports.index = async (req, res) => {
   const allListings = await Listing.find({});
@@ -23,9 +43,15 @@ module.exports.createListing = async (req, res) => {
     };
   }
 
+  // ✅ FIXED: Geocode the actual location instead of hardcoding Mumbai
+  const coordinates = await geocodeLocation(
+    req.body.listing.location,
+    req.body.listing.country
+  );
+
   listing.geometry = {
     type: "Point",
-    coordinates: [72.8777, 19.0760],
+    coordinates,
   };
 
   listing.owner = req.user._id;
@@ -73,6 +99,17 @@ module.exports.updateListing = async (req, res) => {
     };
   }
 
+  // ✅ FIXED: Re-geocode when listing is updated too
+  const coordinates = await geocodeLocation(
+    req.body.listing.location,
+    req.body.listing.country
+  );
+
+  listing.geometry = {
+    type: "Point",
+    coordinates,
+  };
+
   await listing.save();
   req.flash("success", "Listing updated!");
   res.redirect(`/listings/${listing._id}`);
@@ -85,7 +122,7 @@ module.exports.destoryListing = async (req, res) => {
   res.redirect("/listings");
 };
 
-// ✅ BOOKING FORM
+// BOOKING FORM
 module.exports.renderBookingForm = async (req, res) => {
   const listing = await Listing.findById(req.params.id);
 
@@ -97,7 +134,7 @@ module.exports.renderBookingForm = async (req, res) => {
   res.render("listings/booking", { listing });
 };
 
-// ✅ USER DASHBOARD
+// USER DASHBOARD
 module.exports.dashboard = async (req, res) => {
   const bookings = await Booking.find({ user: req.user._id })
     .populate("listing")

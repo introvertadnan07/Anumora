@@ -25,6 +25,12 @@ const bookingSchema = new Schema({
     required: true,
     min: 1,
   },
+  // ✅ FIXED: Store Cloudinary URL instead of local filesystem path
+  // Local files are wiped on every Render redeploy
+  invoiceUrl: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

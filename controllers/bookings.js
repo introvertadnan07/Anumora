@@ -3,14 +3,9 @@ const Listing = require("../models/listing");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const transporter = require("../configs/nodemailer");
 const PDFDocument = require("pdfkit");
-const fs = require("fs");
+const { cloudinary } = require("../cloudConfig");
+const { Readable } = require("stream");
 const path = require("path");
-
-// Ensure invoices directory exists
-const invoicesDir = path.join(__dirname, "../invoices");
-if (!fs.existsSync(invoicesDir)) {
-  fs.mkdirSync(invoicesDir);
-}
 
 /* ================= BOOKING FORM ================= */
 module.exports.renderBookingForm = async (req, res) => {
@@ -102,11 +97,14 @@ module.exports.createCheckoutSession = async (req, res) => {
 
   const totalAmount = booking.listing.price * nights;
 
+  // ✅ FIXED: Use BASE_URL env variable instead of hardcoded localhost
+  const BASE_URL = process.env.BASE_URL || "http://localhost:8080";
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
-    success_url: `http://localhost:8080/bookings/success/${booking._id}`,
-    cancel_url: `http://localhost:8080/listings/${booking.listing._id}`,
+    success_url: `${BASE_URL}/bookings/success/${booking._id}`,
+    cancel_url: `${BASE_URL}/listings/${booking.listing._id}`,
     line_items: [
       {
         price_data: {
@@ -139,82 +137,84 @@ module.exports.paymentSuccess = async (req, res) => {
 
   const totalAmount = booking.listing.price * nights;
 
-  /* ✅ Generate Premium PDF Invoice */
-  const invoicePath = path.join(invoicesDir, `invoice-${booking._id}.pdf`);
+  // ✅ FIXED: Generate PDF in memory and upload to Cloudinary
+  // instead of saving to local filesystem (which resets on Render redeploy)
+  const pdfBuffer = await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks = [];
 
-  const doc = new PDFDocument({ margin: 50 });
-  doc.pipe(fs.createWriteStream(invoicePath));
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
 
-  // Header
-  doc
-    .fontSize(22)
-    .fillColor("#111")
-    .text("WANDERLUST", { align: "center" });
+    // Header
+    doc.fontSize(22).fillColor("#111").text("ANUMORA STAY", { align: "center" });
+    doc.fontSize(10).fillColor("gray").text("Premium Travel Experience", { align: "center" });
+    doc.moveDown(2);
 
-  doc
-    .fontSize(10)
-    .fillColor("gray")
-    .text("Premium Travel Experience", { align: "center" });
+    // Title
+    doc.fontSize(18).fillColor("#000").text("INVOICE", { underline: true });
+    doc.moveDown();
 
-  doc.moveDown(2);
+    doc.fontSize(12);
+    doc.text(`Invoice ID: ${booking._id}`);
+    doc.text(`Date: ${new Date().toDateString()}`);
+    doc.moveDown();
 
-  // Title
-  doc.fontSize(18).fillColor("#000").text("INVOICE", { underline: true });
+    doc.fontSize(14).text("Billed To:", { underline: true });
+    doc.fontSize(12);
+    doc.text(booking.user.username);
+    doc.text(booking.user.email);
+    doc.moveDown();
 
-  doc.moveDown();
+    doc.fontSize(14).text("Booking Details:", { underline: true });
+    doc.fontSize(12);
+    doc.text(`Hotel: ${booking.listing.title}`);
+    doc.text(`Location: ${booking.listing.location}, ${booking.listing.country}`);
+    doc.text(`Check-In: ${booking.checkIn.toDateString()}`);
+    doc.text(`Check-Out: ${booking.checkOut.toDateString()}`);
+    doc.text(`Guests: ${booking.guests}`);
+    doc.text(`Nights: ${nights}`);
+    doc.moveDown();
 
-  doc.fontSize(12);
-  doc.text(`Invoice ID: ${booking._id}`);
-  doc.text(`Date: ${new Date().toDateString()}`);
+    doc.rect(50, doc.y, 500, 70).fillAndStroke("#f7f7f7", "#ddd");
+    doc.fillColor("#000").fontSize(12).text(`Price per night: ₹ ${booking.listing.price}`, 60, doc.y + 10);
+    doc.fontSize(14).fillColor("#e63946").text(`Total Paid: ₹ ${totalAmount.toLocaleString("en-IN")}`, 60, doc.y + 30);
+    doc.moveDown(4);
 
-  doc.moveDown();
+    doc.fontSize(10).fillColor("gray").text("Thank you for choosing AnumoraStay ❤️", { align: "center" });
 
-  doc.fontSize(14).text("Billed To:", { underline: true });
-  doc.fontSize(12);
-  doc.text(booking.user.username);
-  doc.text(booking.user.email);
+    doc.end();
+  });
 
-  doc.moveDown();
+  // Upload PDF buffer to Cloudinary
+  const cloudinaryUrl = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "anumora_invoices",
+        public_id: `invoice-${booking._id}`,
+        resource_type: "raw",
+        format: "pdf",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
 
-  doc.fontSize(14).text("Booking Details:", { underline: true });
-  doc.fontSize(12);
-  doc.text(`Hotel: ${booking.listing.title}`);
-  doc.text(`Location: ${booking.listing.location}, ${booking.listing.country}`);
-  doc.text(`Check-In: ${booking.checkIn.toDateString()}`);
-  doc.text(`Check-Out: ${booking.checkOut.toDateString()}`);
-  doc.text(`Guests: ${booking.guests}`);
-  doc.text(`Nights: ${nights}`);
+    const readableStream = new Readable();
+    readableStream.push(pdfBuffer);
+    readableStream.push(null);
+    readableStream.pipe(uploadStream);
+  });
 
-  doc.moveDown();
+  // Save invoice URL to booking so we can retrieve it later
+  booking.invoiceUrl = cloudinaryUrl;
+  await booking.save();
 
-  // Price Box
-  doc
-    .rect(50, doc.y, 500, 60)
-    .fillAndStroke("#f7f7f7", "#ddd");
-
-  doc
-    .fillColor("#000")
-    .fontSize(12)
-    .text(`Price per night: ₹ ${booking.listing.price}`, 60, doc.y + 10);
-
-  doc
-    .fontSize(14)
-    .fillColor("#e63946")
-    .text(`Total Paid: ₹ ${totalAmount.toLocaleString("en-IN")}`, 60, doc.y + 30);
-
-  doc.moveDown(4);
-
-  // Footer
-  doc
-    .fontSize(10)
-    .fillColor("gray")
-    .text("Thank you for choosing Wanderlust ❤️", { align: "center" });
-
-  doc.end();
-
-  /* ✅ Send Receipt Email */
+  // Send Receipt Email
   await transporter.sendMail({
-    from: `"Wanderlust" <${process.env.EMAIL_USER}>`,
+    from: `"AnumoraStay" <${process.env.EMAIL_USER}>`,
     to: booking.user.email,
     subject: "Payment Receipt & Invoice 🧾",
     html: `
@@ -222,31 +222,27 @@ module.exports.paymentSuccess = async (req, res) => {
       <p>Your booking has been confirmed.</p>
       <p><strong>${booking.listing.title}</strong></p>
       <p>Total Paid: ₹ ${totalAmount.toLocaleString("en-IN")}</p>
-      <p>Please find your invoice attached.</p>
+      <p><a href="${cloudinaryUrl}">Click here to download your invoice</a></p>
     `,
-    attachments: [
-      {
-        filename: `invoice-${booking._id}.pdf`,
-        path: invoicePath,
-      },
-    ],
   });
 
-  req.flash("success", "Payment successful! Invoice sent to email.");
+  req.flash("success", "Payment successful! Invoice sent to your email.");
   res.redirect("/bookings/dashboard");
 };
 
 /* ================= DOWNLOAD INVOICE ================= */
 module.exports.downloadInvoice = async (req, res) => {
   const { bookingId } = req.params;
-  const invoicePath = path.join(invoicesDir, `invoice-${bookingId}.pdf`);
 
-  if (!fs.existsSync(invoicePath)) {
-    req.flash("error", "Invoice not found");
+  // ✅ FIXED: Fetch invoice URL from DB (stored on Cloudinary), not local filesystem
+  const booking = await Booking.findById(bookingId);
+
+  if (!booking || !booking.invoiceUrl) {
+    req.flash("error", "Invoice not found. Please contact support.");
     return res.redirect("/bookings/dashboard");
   }
 
-  res.download(invoicePath);
+  res.redirect(booking.invoiceUrl);
 };
 
 /* ================= DASHBOARD ================= */

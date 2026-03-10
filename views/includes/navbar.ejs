@@ -1,14 +1,14 @@
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
-    
+
     <a class="navbar-brand" href="/">
       <i class="fa-regular fa-compass"></i>
     </a>
 
-    <button 
-      class="navbar-toggler" 
-      type="button" 
-      data-bs-toggle="collapse" 
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
       data-bs-target="#navbarNavAltMarkup"
     >
       <span class="navbar-toggler-icon"></span>
@@ -19,9 +19,10 @@
       <div class="navbar-nav">
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/listings">All Listings</a>
-        <a class="nav-link" href="/listings/new">Add New Listing</a>
 
+        <!-- ✅ FIXED: Only show "Add New Listing" to logged-in users -->
         <% if (currUser) { %>
+          <a class="nav-link" href="/listings/new">Add New Listing</a>
           <a class="nav-link" href="/bookings/dashboard">My Bookings</a>
         <% } %>
       </div>
@@ -31,6 +32,7 @@
           <a class="nav-link" href="/signup">Sign up</a>
           <a class="nav-link" href="/login">Log in</a>
         <% } else { %>
+          <span class="nav-link text-muted">Hi, <%= currUser.username %></span>
           <a class="nav-link" href="/logout">Log out</a>
         <% } %>
       </div>

@@ -1,33 +1,255 @@
 <% layout("layouts/boilerplate") %>
 
-<h3>All Listings</h3>
+<style>
+.category-bar-wrap {
+  position: sticky; top: 5rem; z-index: 40;
+  background: white; border-bottom: 1.5px solid #EBEBEB;
+  padding: 0 1rem; margin: -1.5rem -0.75rem 1.5rem;
+}
+.category-bar {
+  display: flex; align-items: center; overflow-x: auto;
+  scrollbar-width: none; max-width: 1200px; margin: 0 auto;
+}
+.category-bar::-webkit-scrollbar { display: none; }
+.cat-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 13px 20px 11px; border: none; background: none; cursor: pointer;
+  font-family: inherit; font-size: 11.5px; font-weight: 500; color: #717171;
+  white-space: nowrap; border-bottom: 2px solid transparent;
+  transition: all 0.18s ease; text-decoration: none; flex-shrink: 0;
+}
+.cat-btn:hover { color: #222; border-bottom-color: #D0D0D0; }
+.cat-btn.active { color: #222; border-bottom-color: #222; font-weight: 600; }
+.cat-btn .ce { font-size: 21px; line-height: 1; }
 
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
-  <% for (let listing of allListings) { %>
-    <a href="/listings/<%= listing._id %>" class="listing-link">
-      <div class="card listing-card">
+.search-wrap { max-width: 1200px; margin: 0 auto 22px; }
+.search-bar {
+  display: flex; align-items: center; gap: 10px; background: #fff;
+  border: 1.5px solid #EBEBEB; border-radius: 32px; padding: 9px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); max-width: 500px;
+  transition: box-shadow 0.2s;
+}
+.search-bar:focus-within { box-shadow: 0 2px 12px rgba(0,0,0,0.12); border-color: #222; }
+.search-bar input { flex: 1; border: none; outline: none; font-size: 14px; font-family: inherit; color: #222; background: none; }
+.search-bar button {
+  background: #FF385C; border: none; color: white;
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;
+}
+.search-bar button:hover { background: #e00b2f; }
 
-        <% if (listing.image && listing.image.url) { %>
-          <img
-            src="<%= listing.image.url %>"
-            class="card-img-top"
-            style="height:20rem; object-fit:cover;"
-          >
-        <% } else { %>
-          <img
-            src="https://via.placeholder.com/600x400?text=No+Image"
-            class="card-img-top"
-          >
-        <% } %>
+.results-header {
+  max-width: 1200px; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.results-header h3 { font-size: 17px; font-weight: 700; }
+.results-count { font-size: 13px; color: #717171; }
+.clear-filter { font-size: 13px; color: #FF385C; font-weight: 600; text-decoration: none; }
+.clear-filter:hover { text-decoration: underline; }
 
-        <div class="card-body">
-          <p class="card-text">
-            <b><%= listing.title %></b><br>
-            ₹ <%= listing.price.toLocaleString("en-IN") %> / night
-          </p>
-        </div>
+/* ── GRID ── */
+.listings-outer { max-width: 1200px; margin: 0 auto; }
+.listings-grid-main {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 22px;
+}
+@media(max-width:1100px){ .listings-grid-main { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:768px) { .listings-grid-main { grid-template-columns: repeat(2,1fr); gap:14px; } }
+@media(max-width:480px) { .listings-grid-main { grid-template-columns: 1fr; } }
 
-      </div>
+/* ── CARD ── */
+.listing-link { text-decoration: none; color: inherit; display: block; }
+.listing-card-new { border-radius: 14px; overflow: hidden; transition: transform 0.22s, box-shadow 0.22s; }
+.listing-card-new:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+.listing-img-wrap { position: relative; aspect-ratio: 4/3; overflow: hidden; border-radius: 14px; }
+.listing-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s; }
+.listing-card-new:hover .listing-img-wrap img { transform: scale(1.04); }
+.listing-cat-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(6px);
+  border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 600; color: #222;
+}
+
+/* ✅ Feature 7: Heart button */
+.heart-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 34px; height: 34px; border-radius: 50%; background: none;
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; transition: transform 0.2s; z-index: 10;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+}
+.heart-btn:hover { transform: scale(1.2); }
+.heart-btn .heart-icon { pointer-events: none; }
+
+.listing-card-info { padding: 10px 2px 4px; }
+.listing-card-title { font-size: 14px; font-weight: 600; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.listing-card-loc { font-size: 13px; color: #717171; margin-bottom: 4px; }
+.listing-card-price { font-size: 14px; color: #222; }
+.listing-card-price b { font-weight: 700; }
+.listing-card-price span { color: #717171; font-weight: 400; }
+
+/* ── EMPTY ── */
+.empty-listings { text-align: center; padding: 80px 20px; grid-column: 1/-1; }
+.empty-listings .ei { font-size: 52px; margin-bottom: 14px; }
+.empty-listings h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.empty-listings p { font-size: 14px; color: #717171; margin-bottom: 18px; }
+.btn-browse {
+  background: #222; color: white; padding: 10px 22px;
+  border-radius: 22px; text-decoration: none; font-size: 14px;
+  font-weight: 600; display: inline-block; transition: background 0.18s;
+}
+.btn-browse:hover { background: #FF385C; color: white; }
+
+/* ✅ Feature 10: Pagination */
+.pagination-wrap {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; margin: 36px auto 0; max-width: 1200px;
+}
+.pg-btn {
+  width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #EBEBEB;
+  background: white; font-size: 13.5px; font-weight: 600; color: #222;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; transition: all 0.18s;
+}
+.pg-btn:hover { border-color: #222; }
+.pg-btn.active { background: #222; color: white; border-color: #222; }
+.pg-btn.disabled { opacity: 0.35; pointer-events: none; }
+.pg-dots { color: #B0B0B0; font-size: 14px; padding: 0 4px; }
+</style>
+
+<!-- CATEGORY BAR -->
+<div class="category-bar-wrap">
+  <div class="category-bar">
+    <a href="/listings" class="cat-btn <%= !activeCategory ? 'active' : '' %>">
+      <span class="ce">🌍</span>All
     </a>
+    <% CATEGORIES.forEach(cat => { %>
+      <a href="/listings?category=<%= cat %><%= searchQuery ? '&search='+searchQuery : '' %>"
+         class="cat-btn <%= activeCategory === cat ? 'active' : '' %>">
+        <span class="ce"><%= CATEGORY_META[cat].emoji %></span><%= cat %>
+      </a>
+    <% }) %>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <form action="/listings" method="GET">
+    <% if (activeCategory) { %><input type="hidden" name="category" value="<%= activeCategory %>"><% } %>
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass" style="color:#B0B0B0;font-size:13px"></i>
+      <input type="text" name="search" placeholder="Search by city, title, or country..." value="<%= searchQuery %>" autocomplete="off">
+      <button type="submit"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </form>
+</div>
+
+<!-- RESULTS HEADER -->
+<div class="results-header">
+  <h3>
+    <% if (activeCategory) { %><%= CATEGORY_META[activeCategory].emoji %> <%= activeCategory %> Stays
+    <% } else if (searchQuery) { %>Results for "<%= searchQuery %>"
+    <% } else { %>All Listings<% } %>
+  </h3>
+  <div style="display:flex;align-items:center;gap:14px">
+    <span class="results-count"><%= totalListings %> place<%= totalListings !== 1 ? 's' : '' %></span>
+    <% if (activeCategory || searchQuery) { %><a href="/listings" class="clear-filter">Clear</a><% } %>
+  </div>
+</div>
+
+<!-- LISTINGS GRID -->
+<div class="listings-outer">
+  <div class="listings-grid-main">
+    <% if (allListings.length === 0) { %>
+      <div class="empty-listings">
+        <div class="ei">🏠</div>
+        <h4>No listings found</h4>
+        <p>Try a different category or search term.</p>
+        <a href="/listings" class="btn-browse">Browse all</a>
+      </div>
+    <% } else { %>
+      <% for (let listing of allListings) { %>
+        <div class="listing-card-new">
+          <div class="listing-img-wrap">
+            <a href="/listings/<%= listing._id %>" class="listing-link">
+              <% if (listing.image && listing.image.url) { %>
+                <img src="<%= listing.image.url %>" alt="<%= listing.title %>" loading="lazy">
+              <% } else { %>
+                <img src="https://placehold.co/400x300/FFE4E8/FF385C?text=🏠" alt="No image">
+              <% } %>
+            </a>
+
+            <% if (listing.category && CATEGORY_META[listing.category]) { %>
+              <span class="listing-cat-badge"><%= CATEGORY_META[listing.category].emoji %> <%= listing.category %></span>
+            <% } %>
+
+            <!-- ✅ Feature 7: Heart / Wishlist button -->
+            <% if (currUser) { %>
+              <% const isWished = wishlistIds.includes(listing._id.toString()) %>
+              <button
+                class="heart-btn"
+                onclick="toggleHeart(this, '<%= listing._id %>')"
+                title="<%= isWished ? 'Remove from wishlist' : 'Save to wishlist' %>"
+              >
+                <span class="heart-icon"><%= isWished ? '❤️' : '🤍' %></span>
+              </button>
+            <% } %>
+          </div>
+
+          <a href="/listings/<%= listing._id %>" class="listing-link">
+            <div class="listing-card-info">
+              <div class="listing-card-title"><%= listing.title %></div>
+              <div class="listing-card-loc"><%= listing.location %>, <%= listing.country %></div>
+              <div class="listing-card-price"><b>₹<%= listing.price.toLocaleString("en-IN") %></b> <span>/ night</span></div>
+            </div>
+          </a>
+        </div>
+      <% } %>
+    <% } %>
+  </div>
+
+  <!-- ✅ Feature 10: Pagination controls -->
+  <% if (totalPages > 1) { %>
+    <div class="pagination-wrap">
+      <!-- Prev -->
+      <a
+        href="?page=<%= currentPage-1 %><%= activeCategory ? '&category='+activeCategory : '' %><%= searchQuery ? '&search='+searchQuery : '' %>"
+        class="pg-btn <%= currentPage <= 1 ? 'disabled' : '' %>"
+      ><i class="fa-solid fa-chevron-left" style="font-size:11px"></i></a>
+
+      <% for (let p = 1; p <= totalPages; p++) { %>
+        <% if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) { %>
+          <a
+            href="?page=<%= p %><%= activeCategory ? '&category='+activeCategory : '' %><%= searchQuery ? '&search='+searchQuery : '' %>"
+            class="pg-btn <%= p === currentPage ? 'active' : '' %>"
+          ><%= p %></a>
+        <% } else if (p === currentPage - 2 || p === currentPage + 2) { %>
+          <span class="pg-dots">…</span>
+        <% } %>
+      <% } %>
+
+      <!-- Next -->
+      <a
+        href="?page=<%= currentPage+1 %><%= activeCategory ? '&category='+activeCategory : '' %><%= searchQuery ? '&search='+searchQuery : '' %>"
+        class="pg-btn <%= currentPage >= totalPages ? 'disabled' : '' %>"
+      ><i class="fa-solid fa-chevron-right" style="font-size:11px"></i></a>
+    </div>
   <% } %>
 </div>
+
+<script>
+// ✅ Feature 7: Toggle heart without page reload
+async function toggleHeart(btn, listingId) {
+  try {
+    const res = await fetch(`/wishlist/${listingId}`, { method: "POST" });
+    const data = await res.json();
+    btn.querySelector('.heart-icon').textContent = data.saved ? '❤️' : '🤍';
+    btn.title = data.saved ? 'Remove from wishlist' : 'Save to wishlist';
+
+    // Animate
+    btn.style.transform = 'scale(1.35)';
+    setTimeout(() => btn.style.transform = '', 200);
+  } catch (err) {
+    console.error("Wishlist error:", err);
+  }
+}
+</script>

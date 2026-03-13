@@ -1,92 +1,134 @@
-<% layout("layouts/boilerplate") -%>
-<div class="row mt-3">
-  <div class="col-8 offset-2">
-    <h3>Edit your Listing</h3>
-    <form 
-      method="POST" 
-      action="/listings/<%= listing._id %>?_method=PUT" 
-      novalidate 
-      class="needs-validation" 
-      enctype="multipart/form-data" 
-      >
-      
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input 
-          name="listing[title]" 
-          value="<%= listing.title %>" 
-          type="text" 
-          class="form-control" 
-          required
-        />
-        <div class="invalid-feedback">Title looks good!</div>
+<% layout("layouts/boilerplate") %>
+
+<style>
+.form-wrap { max-width: 640px; margin: 0 auto; padding-bottom: 40px; }
+.form-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.form-sub { font-size: 14px; color: #717171; margin-bottom: 28px; }
+.form-group { margin-bottom: 20px; }
+.form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 7px; color: #222; }
+.form-control-custom {
+  width: 100%; padding: 11px 14px; border: 1.5px solid #EBEBEB;
+  border-radius: 10px; font-size: 14px; font-family: inherit; color: #222;
+  background: #FAFAFA; outline: none; transition: border-color 0.18s, background 0.18s;
+}
+.form-control-custom:focus { border-color: #222; background: white; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.category-picker { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+@media(max-width:520px) { .category-picker { grid-template-columns: repeat(3,1fr); } }
+.cat-option { display: none; }
+.cat-label {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 12px 8px; border: 1.5px solid #EBEBEB; border-radius: 12px;
+  cursor: pointer; transition: all 0.18s; background: #FAFAFA;
+  font-size: 12px; font-weight: 500; color: #717171; text-align: center;
+}
+.cat-label .ce { font-size: 24px; line-height: 1; }
+.cat-label:hover { border-color: #222; color: #222; background: white; }
+.cat-option:checked + .cat-label { border-color: #FF385C; background: #FFF0F2; color: #FF385C; font-weight: 600; }
+.current-img { border-radius: 12px; max-width: 100%; max-height: 200px; object-fit: cover; margin-bottom: 10px; }
+.upload-area {
+  border: 2px dashed #EBEBEB; border-radius: 12px; padding: 20px;
+  text-align: center; cursor: pointer; transition: all 0.18s; background: #FAFAFA; position: relative;
+}
+.upload-area:hover { border-color: #222; background: white; }
+.upload-area input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-text { font-size: 13px; color: #717171; }
+#preview-img { max-width: 100%; border-radius: 10px; margin-top: 12px; display: none; }
+.submit-btn {
+  background: #222; color: white; border: none; padding: 13px 32px;
+  border-radius: 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background 0.18s; font-family: inherit; width: 100%; margin-top: 8px;
+}
+.submit-btn:hover { background: #FF385C; }
+</style>
+
+<div class="form-wrap">
+  <h2 class="form-title">Edit Listing</h2>
+  <p class="form-sub">Update your property details below.</p>
+
+  <form action="/listings/<%= listing._id %>?_method=PUT" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+    <div class="form-group">
+      <label class="form-label">Listing Title *</label>
+      <input type="text" name="listing[title]" class="form-control-custom" value="<%= listing.title %>" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <textarea name="listing[description]" class="form-control-custom" rows="4" required style="resize:vertical"><%= listing.description %></textarea>
+    </div>
+
+    <div class="form-row form-group">
+      <div>
+        <label class="form-label">Location *</label>
+        <input type="text" name="listing[location]" class="form-control-custom" value="<%= listing.location %>" required>
       </div>
-
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea 
-          name="listing[description]" 
-          class="form-control" 
-          required><%= listing.description %></textarea>
-        <div class="invalid-feedback">Please enter a short description</div>
+      <div>
+        <label class="form-label">Country *</label>
+        <input type="text" name="listing[country]" class="form-control-custom" value="<%= listing.country %>" required>
       </div>
+    </div>
 
-      <div class="mb-3">
-        Original Listing Image <br />
-        <img src="<%= listing.image.url%>" />
+    <div class="form-group">
+      <label class="form-label">Price per night (₹) *</label>
+      <input type="number" name="listing[price]" class="form-control-custom" value="<%= listing.price %>" min="0" required>
+    </div>
 
+    <!-- ✅ CATEGORY PICKER with current value pre-selected -->
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <div class="category-picker">
+        <% CATEGORIES.forEach(cat => { %>
+          <div>
+            <input
+              type="radio"
+              class="cat-option"
+              name="listing[category]"
+              id="cat-<%= cat %>"
+              value="<%= cat %>"
+              <%= listing.category === cat ? 'checked' : '' %>
+            >
+            <label class="cat-label" for="cat-<%= cat %>">
+              <span class="ce"><%= CATEGORY_META[cat].emoji %></span>
+              <%= cat %>
+            </label>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Current image + replace -->
+    <div class="form-group">
+      <label class="form-label">Property Photo</label>
+      <% if (listing.image && listing.image.url) { %>
+        <div style="margin-bottom:10px">
+          <img src="<%= listing.image.url %>" class="current-img" alt="Current image">
+          <div style="font-size:12px;color:#717171">Current photo — upload a new one to replace it</div>
         </div>
-
-      <div class="mb-3">
-        <label for="image" class="form-label">Upload New Image</label>
-        <input 
-          name="listing[image]" 
-          type="file" 
-          class="form-control" 
-        />
+      <% } %>
+      <div class="upload-area">
+        <input type="file" name="listing[image]" id="imgInput" accept="image/*">
+        <div class="upload-text"><b>Click to upload new photo</b> (optional)</div>
+        <img id="preview-img" src="" alt="preview">
       </div>
+    </div>
 
-      <div class="row">
-        <div class="mb-3 col-md-4">
-          <label for="price" class="form-label">Price</label>
-          <input 
-            name="listing[price]" 
-            value="<%= listing.price %>" 
-            type="number" 
-            class="form-control"
-            required
-          />
-          <div class="invalid-feedback">Price should be valid</div>
-        </div>
-
-        <div class="mb-3 col-md-8">
-          <label for="country" class="form-label">Country</label>
-          <input
-            name="listing[country]"
-            value="<%= listing.country %>"
-            type="text"
-            class="form-control"
-            required
-          />
-          <div class="invalid-feedback">Country name should be valid</div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label for="location" class="form-label">Location</label>
-        <input
-          name="listing[location]"
-          value="<%= listing.location %>"
-          type="text"
-          class="form-control" 
-          required
-        />
-        <div class="invalid-feedback">Location should be valid</div>
-      </div>
-
-      <br /><br />
-      <button class="btn btn-dark edit-btn mt-3">Edit</button>
-      <br /><br />
-    </form>
-  </div>
+    <button class="submit-btn" type="submit">
+      <i class="fa-solid fa-floppy-disk" style="margin-right:8px"></i>Save Changes
+    </button>
+  </form>
 </div>
+
+<script>
+  document.getElementById('imgInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+</script>

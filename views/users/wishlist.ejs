@@ -1,0 +1,113 @@
+<% layout("layouts/boilerplate") %>
+
+<style>
+.wl-header { margin-bottom: 24px; }
+.wl-header h2 { font-size: 22px; font-weight: 700; }
+.wl-header p { font-size: 14px; color: #717171; margin-top: 4px; }
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+@media(max-width:1100px){ .wl-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:768px) { .wl-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px) { .wl-grid { grid-template-columns: 1fr; } }
+
+.wl-card { border-radius: 14px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+.wl-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+.wl-card-img { position: relative; aspect-ratio: 4/3; overflow: hidden; border-radius: 14px; }
+.wl-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.wl-card:hover .wl-card-img img { transform: scale(1.04); }
+.wl-heart {
+  position: absolute; top: 10px; right: 10px;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: white; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 16px; color: #FF385C;
+  transition: transform 0.2s;
+}
+.wl-heart:hover { transform: scale(1.15); }
+.wl-card-info { padding: 10px 2px 4px; }
+.wl-card-title { font-size: 14px; font-weight: 600; color: #222; }
+.wl-card-loc { font-size: 13px; color: #717171; margin-top: 2px; }
+.wl-card-price { font-size: 14px; color: #222; margin-top: 4px; }
+.wl-card-price b { font-weight: 700; }
+.empty-wl { text-align: center; padding: 80px 20px; }
+.empty-wl .ei { font-size: 52px; margin-bottom: 16px; }
+.empty-wl h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.empty-wl p { font-size: 14px; color: #717171; margin-bottom: 20px; }
+.btn-browse {
+  background: #222; color: white; padding: 11px 26px;
+  border-radius: 24px; text-decoration: none; font-size: 14px; font-weight: 600;
+  display: inline-block; transition: background 0.18s;
+}
+.btn-browse:hover { background: #FF385C; color: white; }
+</style>
+
+<div class="wl-header">
+  <h2>❤️ My Wishlist</h2>
+  <p><%= wishlistListings.length %> saved place<%= wishlistListings.length !== 1 ? 's' : '' %></p>
+</div>
+
+<% if (wishlistListings.length === 0) { %>
+  <div class="empty-wl">
+    <div class="ei">🏠</div>
+    <h4>No saved listings yet</h4>
+    <p>Tap the heart on any listing to save it here.</p>
+    <a href="/listings" class="btn-browse">Browse listings</a>
+  </div>
+<% } else { %>
+  <div class="wl-grid">
+    <% for (let listing of wishlistListings) { %>
+      <div class="wl-card">
+        <div class="wl-card-img">
+          <a href="/listings/<%= listing._id %>">
+            <% if (listing.image && listing.image.url) { %>
+              <img src="<%= listing.image.url %>" alt="<%= listing.title %>" loading="lazy">
+            <% } else { %>
+              <img src="https://placehold.co/400x300/FFE4E8/FF385C?text=🏠" alt="No image">
+            <% } %>
+          </a>
+          <!-- Heart button — already saved, click to remove -->
+          <button
+            class="wl-heart"
+            data-id="<%= listing._id %>"
+            title="Remove from wishlist"
+            onclick="toggleWishlist(this, '<%= listing._id %>')"
+          >❤️</button>
+        </div>
+        <a href="/listings/<%= listing._id %>" style="text-decoration:none;color:inherit">
+          <div class="wl-card-info">
+            <div class="wl-card-title"><%= listing.title %></div>
+            <div class="wl-card-loc"><%= listing.location %>, <%= listing.country %></div>
+            <div class="wl-card-price"><b>₹<%= listing.price.toLocaleString("en-IN") %></b> / night</div>
+          </div>
+        </a>
+      </div>
+    <% } %>
+  </div>
+<% } %>
+
+<script>
+async function toggleWishlist(btn, listingId) {
+  try {
+    const res = await fetch(`/wishlist/${listingId}`, { method: "POST" });
+    const data = await res.json();
+    if (!data.saved) {
+      // Removed — fade out the card
+      btn.closest('.wl-card').style.transition = "opacity 0.3s";
+      btn.closest('.wl-card').style.opacity = "0";
+      setTimeout(() => {
+        btn.closest('.wl-card').remove();
+        const remaining = document.querySelectorAll('.wl-card').length;
+        document.querySelector('.wl-header p').textContent =
+          `${remaining} saved place${remaining !== 1 ? 's' : ''}`;
+        if (remaining === 0) location.reload();
+      }, 300);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+</script>

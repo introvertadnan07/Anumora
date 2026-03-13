@@ -1,23 +1,13 @@
-<% layout("layouts/boilerplate") %>
-
-<div class="row">
-  <h1 class="col-6 offset-3">Forgot Password</h1>
-
-  <div class="col-6 offset-3">
-    <form action="/forgot" method="POST">
-      
-      <div class="mb-3">
-        <label class="form-label">Enter your email</label>
-        <input
-          type="email"
-          name="email"
-          class="form-control"
-          required
-        />
-      </div>
-
-      <button class="btn btn-warning">Generate Reset Link</button>
-
-    </form>
+<% if (success && success.length) { %>
+  <div class="alert alert-success alert-dismissible fade show col-6 offset-3 mt-3" role="alert">
+    <%= success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
-</div>
+<% } %>
+
+<% if (error && error.length) { %>
+  <div class="alert alert-danger alert-dismissible fade show col-6 offset-3 mt-3" role="alert">
+    <%= error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>

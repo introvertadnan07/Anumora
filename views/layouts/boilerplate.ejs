@@ -1,3 +1,7 @@
+<%
+  success = typeof success !== 'undefined' ? success : [];
+  error   = typeof error   !== 'undefined' ? error   : [];
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +21,7 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
   >
 
-  <!-- Mapbox CSS (needed for map on show page) -->
+  <!-- Mapbox CSS -->
   <link
     href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
     rel="stylesheet"

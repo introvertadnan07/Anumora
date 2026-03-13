@@ -1,209 +1,557 @@
-/* ================= GLOBAL ================= */
+/* ============================================================
+   AnumoraStay — Mobile-First Responsive CSS
+   Breakpoints: 480px | 768px | 1024px | 1200px
+   ============================================================ */
+
+/* ── GOOGLE FONT ── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ── CSS VARIABLES ── */
+:root {
+  --brand:       #FF385C;
+  --brand-dark:  #e00b2f;
+  --dark:        #222222;
+  --gray:        #717171;
+  --light-gray:  #EBEBEB;
+  --bg:          #ffffff;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --radius:      1rem;
+  --navbar-h:    4.5rem;
+  --transition:  0.2s ease;
+}
+
+/* ── RESET / BASE ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-    font-family: "Plus Jakarta Sans", serif !important;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--dark);
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
-.container {
-    flex: 1;
-}
+img { max-width: 100%; height: auto; display: block; }
+a  { text-decoration: none; color: inherit; }
 
-/* ================= NAVBAR ================= */
+.container { flex: 1; }
 
+/* ============================================================
+   NAVBAR
+   ============================================================ */
 .navbar {
-    height: 5rem;
-    background-color: white;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: var(--navbar-h);
+  background: white;
+  padding: 0 1.5rem;
+  box-shadow: 0 1px 0 var(--light-gray);
+  z-index: 100;
 }
 
-.navbar-nav {
-    gap: 2.5rem;
-}
+/* Brand icon */
+.fa-compass { color: var(--brand); font-size: 1.8rem; }
+
+/* Nav links */
+.navbar-nav { gap: 0.25rem; }
 
 .nav-link {
-    color: #222222 !important;
-    font-weight: 500;
-    padding: 0.5rem 0;
+  color: var(--dark) !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.5rem;
+  transition: background var(--transition), color var(--transition);
 }
 
 .nav-link:hover {
-    color: #fe424d !important;
+  color: var(--brand) !important;
+  background: #FFF0F2;
 }
 
-.fa-compass {
-    color: #fe424d;
-    font-size: 2rem;
+/* Mobile hamburger menu */
+.navbar-toggler {
+  border: 1.5px solid var(--light-gray);
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.6rem;
+}
+.navbar-toggler:focus { box-shadow: none; }
+
+/* Mobile nav dropdown */
+@media (max-width: 767px) {
+  .navbar {
+    padding: 0 1rem;
+    height: auto;
+    min-height: 4rem;
+  }
+
+  .navbar-collapse {
+    border-top: 1px solid var(--light-gray);
+    margin-top: 0.5rem;
+    padding: 0.75rem 0;
+  }
+
+  .navbar-nav {
+    gap: 0;
+    flex-direction: column;
+  }
+
+  .nav-link {
+    padding: 0.65rem 0.5rem !important;
+    font-size: 0.95rem;
+    border-radius: 0;
+    border-bottom: 1px solid #F5F5F5;
+  }
+
+  .navbar-nav.ms-auto {
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--light-gray);
+    padding-top: 0.5rem;
+  }
 }
 
-/* ================= FOOTER ================= */
-
-.f-info {
-    text-align: center;
-    height: 8rem;
-    background-color: #ebebeb;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.8rem;
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+.alert {
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-/* ================= LISTING CARDS ================= */
+@media (max-width: 767px) {
+  /* Full width on mobile instead of col-6 offset-3 */
+  .alert.col-6 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .alert.offset-3 {
+    margin-left: 0 !important;
+  }
+}
 
+/* ============================================================
+   LISTINGS INDEX — GRID
+   ============================================================ */
+.listing-link { display: block; color: inherit; text-decoration: none; }
+
+/* Card grid — Bootstrap row override for better mobile */
+.row-cols-lg-3 > * { padding: 0.6rem; }
+
+@media (max-width: 480px) {
+  /* Single column on small phones */
+  .row-cols-sm-1 > * { flex: 0 0 100%; max-width: 100%; }
+}
+
+/* ============================================================
+   LISTING CARD
+   ============================================================ */
 .listing-card {
-    border: none !important;
-    border-radius: 1.2rem;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none !important;
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+  background: white;
+  box-shadow: var(--card-shadow);
 }
 
 .listing-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
 }
 
 .card-img-top {
-    border-radius: 1.2rem;
-    width: 100%;
-    height: 20rem;
-    object-fit: cover;
+  width: 100%;
+  height: 13rem;
+  object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0 !important;
 }
 
-.card-body {
-    padding: 1rem;
+@media (min-width: 768px) {
+  .card-img-top { height: 16rem; }
 }
 
-/* ================= BUTTONS ================= */
-
-.add-btn,
-.edit-btn {
-    background-color: #fe424d !important;
-    border: none !important;
-    color: white !important;
-    border-radius: 0.6rem;
+@media (min-width: 1024px) {
+  .card-img-top { height: 18rem; }
 }
 
-.add-btn:hover,
-.edit-btn:hover {
-    background-color: #e63946 !important;
+.card-body { padding: 0.85rem 1rem; }
+
+.card-body p {
+  font-size: 0.88rem;
+  margin-bottom: 0.2rem;
+  line-height: 1.4;
 }
 
-.btn-dark {
-    border-radius: 0.6rem;
-}
-
-/* ================= SHOW PAGE ================= */
-
+/* ============================================================
+   SHOW PAGE
+   ============================================================ */
 .show-card {
-    border-radius: 1.2rem;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  border: none !important;
 }
 
 .show-img {
-    height: 45vh;
-    object-fit: cover;
+  width: 100%;
+  height: 35vw;
+  min-height: 200px;
+  max-height: 480px;
+  object-fit: cover;
 }
 
-/* ================= REVIEWS ================= */
+@media (max-width: 767px) {
+  .show-img {
+    height: 55vw;
+    min-height: 200px;
+    max-height: 320px;
+  }
 
-.review-form textarea {
-    border-radius: 0.7rem;
-    padding: 0.7rem;
-    resize: none;
+  /* Full width on mobile */
+  .col-md-8.mx-auto {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
-.review-form textarea:focus {
-    border-color: #fe424d;
-    box-shadow: 0 0 0 0.15rem rgba(254, 66, 77, 0.25);
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.add-btn, .edit-btn {
+  background-color: var(--brand) !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 2rem !important;
+  padding: 0.55rem 1.4rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  transition: background var(--transition), transform var(--transition) !important;
 }
 
+.add-btn:hover, .edit-btn:hover {
+  background-color: var(--brand-dark) !important;
+  transform: translateY(-1px);
+}
+
+.btn-dark {
+  border-radius: 2rem !important;
+  padding: 0.55rem 1.4rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+}
+
+.btn-danger {
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  border-radius: 2rem !important;
+  padding: 0.55rem 1.4rem !important;
+  font-weight: 600 !important;
+}
+
+/* Full width buttons on mobile */
+@media (max-width: 480px) {
+  .btn, .add-btn, .edit-btn, .btn-dark, .btn-danger {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Except small buttons like delete in review */
+  .btn-sm {
+    width: auto !important;
+  }
+}
+
+/* ============================================================
+   FORMS (new/edit listing, login, signup)
+   ============================================================ */
+.form-control, .form-select {
+  border-radius: 0.65rem !important;
+  border: 1.5px solid var(--light-gray) !important;
+  font-size: 0.9rem !important;
+  padding: 0.65rem 0.9rem !important;
+  transition: border-color var(--transition), box-shadow var(--transition) !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 0.15rem rgba(255,56,92,0.15) !important;
+}
+
+/* Form container max width */
+@media (max-width: 767px) {
+  form.col-md-6, form.col-md-8, .col-md-6, .col-md-8 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* ============================================================
+   REVIEWS
+   ============================================================ */
 .review-card {
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background: white;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: white;
+  transition: transform var(--transition), box-shadow var(--transition);
+  border: 1px solid #F5F5F5;
 }
 
 .review-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.10);
 }
 
 .review-username {
-    font-weight: 600;
-    margin-bottom: 0.3rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
 }
 
 .review-comment {
-    margin-top: 0.4rem;
-    color: #444;
-    line-height: 1.4;
+  margin-top: 0.35rem;
+  color: #444;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
-.review-delete-btn {
-    margin-top: 0.6rem;
+/* Full width review cards on mobile */
+@media (max-width: 600px) {
+  .col-md-6 { flex: 0 0 100%; max-width: 100%; }
 }
 
-/* ⭐ Star spacing fix */
-.starability-slot {
-    margin-top: 0.4rem;
-    margin-bottom: 0.6rem;
-    transform: scale(0.95);
+/* ============================================================
+   REVIEW FORM
+   ============================================================ */
+.review-form textarea {
+  border-radius: 0.65rem;
+  resize: none;
+  font-size: 0.9rem;
 }
 
-/* ⭐ Result stars spacing */
-.starability-result {
-    margin: 0.3rem 0;
-}
-
-/* ================= AI SUMMARY ================= */
-
-#aiSummaryText {
-    margin-left: 0.4rem;
-}
-
-/* ================= CHAT ASSISTANT ================= */
+/* ============================================================
+   AI SUMMARY & CHAT
+   ============================================================ */
+#aiSummaryText { margin-left: 0.3rem; font-size: 0.9rem; }
 
 #chatInput {
-    border-radius: 0.6rem;
-    padding: 0.7rem;
+  border-radius: 0.65rem;
+  font-size: 0.9rem;
+  padding: 0.65rem 0.9rem;
 }
 
-#chatBtn {
-    border-radius: 0.6rem;
+#chatBtn { border-radius: 2rem; padding: 0.55rem 1.4rem; font-weight: 600; }
+
+@media (max-width: 480px) {
+  #chatInput { margin-bottom: 0.6rem; }
 }
 
-/* ================= MAP ================= */
-
+/* ============================================================
+   MAP
+   ============================================================ */
 #map {
-    height: 400px;
-    width: 100%;
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  height: 300px;
 }
 
-/* ================= ANIMATIONS ================= */
+@media (min-width: 768px) { #map { height: 380px; } }
+@media (min-width: 1024px) { #map { height: 420px; } }
 
+/* ============================================================
+   BOOKING FORM PAGE
+   ============================================================ */
+@media (max-width: 767px) {
+  .booking-wrap { padding: 0 0.5rem 2rem; }
+
+  .dates-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .booking-card-header { padding: 18px 20px; }
+  .booking-body { padding: 20px; }
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+@media (max-width: 767px) {
+  /* Stack dashboard sidebar + content */
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+
+  .dashboard-sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    position: relative !important;
+  }
+
+  /* Horizontal scrollable tab nav on mobile */
+  .dashboard-sidebar .nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .dashboard-sidebar .nav::-webkit-scrollbar { display: none; }
+
+  .dashboard-sidebar .nav-link {
+    border-radius: 0 !important;
+    border-bottom: 2.5px solid transparent !important;
+    padding: 0.7rem 1rem !important;
+    flex-shrink: 0;
+  }
+
+  /* Stats cards — 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Tables scroll horizontally */
+  .table-responsive-mobile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table { min-width: 600px; font-size: 0.82rem; }
+}
+
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.f-info {
+  background: #F7F7F7;
+  border-top: 1px solid var(--light-gray);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--gray);
+  min-height: 5rem;
+}
+
+.f-info-socials { display: flex; gap: 1rem; font-size: 1.1rem; }
+.f-info-socials i { cursor: pointer; transition: color var(--transition); }
+.f-info-socials i:hover { color: var(--brand); }
+
+.f-info-links { display: flex; gap: 1rem; }
+.f-info-links a { color: var(--gray); font-weight: 500; }
+.f-info-links a:hover { color: var(--brand); text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .f-info { flex-direction: column; gap: 0.75rem; padding: 1.25rem 1rem; text-align: center; }
+}
+
+/* ============================================================
+   CATEGORY BAR (from tier1-categories feature)
+   ============================================================ */
+@media (max-width: 767px) {
+  .category-bar-wrap { margin: -1rem -0.75rem 1rem; padding: 0 0.5rem; }
+  .cat-btn { padding: 10px 14px 9px; font-size: 10.5px; }
+  .cat-btn .cat-emoji, .cat-btn .ce { font-size: 18px; }
+}
+
+/* ============================================================
+   SEARCH BAR (from tier1 feature)
+   ============================================================ */
+@media (max-width: 767px) {
+  .search-bar { max-width: 100% !important; }
+  .search-wrap { padding: 0; }
+}
+
+/* ============================================================
+   PAGINATION (from feature 10)
+   ============================================================ */
+@media (max-width: 480px) {
+  .pagination-wrap { gap: 4px; }
+  .pg-btn { width: 34px; height: 34px; font-size: 12px; }
+}
+
+/* ============================================================
+   LOGIN / SIGNUP PAGES
+   ============================================================ */
+@media (max-width: 767px) {
+  .col-md-4, .col-md-6 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* ============================================================
+   ERROR PAGE
+   ============================================================ */
+.error-page {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.error-page h1 { font-size: clamp(3rem, 10vw, 6rem); color: var(--brand); font-weight: 800; }
+.error-page h3 { font-size: clamp(1.2rem, 4vw, 1.8rem); margin-bottom: 1rem; }
+.error-page p  { color: var(--gray); font-size: 1rem; margin-bottom: 2rem; }
+
+/* ============================================================
+   UTILITY — touch targets
+   All tappable elements min 44px tall on mobile
+   ============================================================ */
+@media (max-width: 767px) {
+  button, .btn, a.btn, input[type="submit"] {
+    min-height: 44px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 .alert-secondary {
-    animation: fadeIn 0.25s ease-in-out;
+  animation: fadeIn 0.25s ease-in-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(3px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Card stagger animation on index page load */
+.listing-card {
+  animation: cardIn 0.3s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SCROLLBAR (desktop) — subtle styling
+   ============================================================ */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #F7F7F7; }
+  ::-webkit-scrollbar-thumb { background: #D0D0D0; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #B0B0B0; }
 }

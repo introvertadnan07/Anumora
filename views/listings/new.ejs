@@ -1,91 +1,201 @@
-    <% layout("layouts/boilerplate") -%>
-    <div class="row">
-      <div class="col-8 offset-2">
-        <!-- <br /><br /> -->
-    <h3>Create a New Listing</h3>
-    <form 
-    method="POST" 
-    action="/listings" 
-    novalidate class="needs-validation" 
-    enctype="multipart/form-data" 
-    >
+<% layout("layouts/boilerplate") %>
 
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input 
-        name="listing[title]" 
-        placeholder="Add a catchy title" 
-        type="text" 
-        class="form-control"
-        required
-        />
-        <div class="invalid-feedback">Title looks good!</div>
-      </div>
-      <div  class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea
-        name="listing[description]"
-        placeholder="enter description"
-        class="form-control"
-        required
-      ></textarea>
-      <div class="invalid-feedback">Please enter short description</div>
-      </div>
-      
-      <div  class="mb-3">
-        <label for="image" class="form-label">Upload Listing image </label>
-        <input name="listing[image]"
-        type="file"
-        class="form-control"
-        required
-      />
-      </div>
+<style>
+.form-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+.form-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.form-sub { font-size: 14px; color: #717171; margin-bottom: 28px; }
 
+.form-group { margin-bottom: 20px; }
+.form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 7px; color: #222; }
+.form-control-custom {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #EBEBEB;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #222;
+  background: #FAFAFA;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+.form-control-custom:focus { border-color: #222; background: white; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
+/* ── CATEGORY PICKER ── */
+.category-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media(max-width:520px) { .category-picker { grid-template-columns: repeat(3,1fr); } }
 
-      <div class="row">
-        <div  class="mb-3 col-md-4">
-          <label for="price" class="form-label">Price</label>
-          <input 
-          name="listing[price]" 
-          placeholder="2100" 
-          type="number" 
-          class="form-control"
-          required
-          />
-          <div class="invalid-feedback">price should be valid Price</div>
-        </div>
-  
-        <div  class="mb-3 col-md-8">
-          <label for="country" class="form-label">Country</label>
-          <input 
-          name="listing[country]" 
-          placeholder="India" 
-          type="text" 
-          class="form-control"
-          required
-          />
-          <div class="invalid-feedback">Country name should be valid</div>
-        </div>
+.cat-option { display: none; }
+.cat-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 8px;
+  border: 1.5px solid #EBEBEB;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: #FAFAFA;
+  font-size: 12px;
+  font-weight: 500;
+  color: #717171;
+  text-align: center;
+}
+.cat-label .ce { font-size: 24px; line-height: 1; }
+.cat-label:hover { border-color: #222; color: #222; background: white; }
+.cat-option:checked + .cat-label {
+  border-color: #FF385C;
+  background: #FFF0F2;
+  color: #FF385C;
+  font-weight: 600;
+}
+
+/* ── IMAGE UPLOAD ── */
+.upload-area {
+  border: 2px dashed #EBEBEB;
+  border-radius: 12px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+  background: #FAFAFA;
+  position: relative;
+}
+.upload-area:hover { border-color: #222; background: white; }
+.upload-area input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 28px; margin-bottom: 8px; color: #B0B0B0; }
+.upload-text { font-size: 13.5px; color: #717171; }
+.upload-text b { color: #222; }
+#preview-img { max-width: 100%; border-radius: 10px; margin-top: 14px; display: none; }
+
+/* ── SUBMIT ── */
+.submit-btn {
+  background: #FF385C;
+  color: white;
+  border: none;
+  padding: 13px 32px;
+  border-radius: 28px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+  font-family: inherit;
+  width: 100%;
+  margin-top: 8px;
+}
+.submit-btn:hover { background: #e00b2f; }
+</style>
+
+<div class="form-wrap">
+  <h2 class="form-title">Create a new listing</h2>
+  <p class="form-sub">Fill in the details below to list your property on AnumoraStay.</p>
+
+  <form action="/listings" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+    <!-- Title -->
+    <div class="form-group">
+      <label class="form-label">Listing Title *</label>
+      <input type="text" name="listing[title]" class="form-control-custom" placeholder="e.g. Cozy Beach House in Goa" required>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <textarea name="listing[description]" class="form-control-custom" rows="4" placeholder="Describe your property — what makes it special?" required style="resize:vertical"></textarea>
+    </div>
+
+    <!-- Location + Country -->
+    <div class="form-row form-group">
+      <div>
+        <label class="form-label">Location *</label>
+        <input type="text" name="listing[location]" class="form-control-custom" placeholder="City / Area" required>
       </div>
-
-    
-      <div class="mb-3">
-        <label for="location" class="form-label">Location</label>
-        <input
-        name="listing[location]"
-        placeholder="Banglore"
-        type="text"
-        class="form-control"
-        required
-      />
-      <div class="invalid-feedback">Loction should be valid</div>
+      <div>
+        <label class="form-label">Country *</label>
+        <input type="text" name="listing[country]" class="form-control-custom" placeholder="e.g. India" required>
       </div>
-      <button class="btn btn-dark add-btn">Add</button>
-      <br /><br />
-    </form>
-  </div>
+    </div>
+
+    <!-- Price -->
+    <div class="form-group">
+      <label class="form-label">Price per night (₹) *</label>
+      <input type="number" name="listing[price]" class="form-control-custom" placeholder="e.g. 2500" min="0" required>
+    </div>
+
+    <!-- ✅ CATEGORY PICKER -->
+    <div class="form-group">
+      <label class="form-label">Category *</label>
+      <div class="category-picker">
+        <% CATEGORIES.forEach((cat, i) => { %>
+          <div>
+            <input
+              type="radio"
+              class="cat-option"
+              name="listing[category]"
+              id="cat-<%= cat %>"
+              value="<%= cat %>"
+              <%= i === 0 ? 'checked' : '' %>
+            >
+            <label class="cat-label" for="cat-<%= cat %>">
+              <span class="ce"><%= CATEGORY_META[cat].emoji %></span>
+              <%= cat %>
+            </label>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- Image Upload -->
+    <div class="form-group">
+      <label class="form-label">Property Photo</label>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" name="listing[image]" id="imgInput" accept="image/*">
+        <div class="upload-icon"><i class="fa-regular fa-image"></i></div>
+        <div class="upload-text"><b>Click to upload</b> or drag and drop<br><small>JPG, PNG, WEBP up to 10MB</small></div>
+        <img id="preview-img" src="" alt="preview">
+      </div>
+    </div>
+
+    <button class="submit-btn" type="submit">
+      <i class="fa-solid fa-plus" style="margin-right:8px"></i>Create Listing
+    </button>
+  </form>
 </div>
 
+<script>
+  // Image preview
+  document.getElementById('imgInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = document.getElementById('preview-img');
+      img.src = ev.target.result;
+      img.style.display = 'block';
+      document.querySelector('.upload-icon').style.display = 'none';
+      document.querySelector('.upload-text').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
 
- 
+  // Bootstrap validation
+  document.querySelector('form').addEventListener('submit', function(e) {
+    if (!this.checkValidity()) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    this.classList.add('was-validated');
+  });
+</script>

@@ -1,8 +1,9 @@
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
 
-    <a class="navbar-brand" href="/">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
       <i class="fa-regular fa-compass"></i>
+      <span style="font-weight:700;font-size:1rem;color:#222">AnumoraStay</span>
     </a>
 
     <button
@@ -10,6 +11,9 @@
       type="button"
       data-bs-toggle="collapse"
       data-bs-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -19,9 +23,17 @@
       <div class="navbar-nav">
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/listings">All Listings</a>
-
         <% if (currUser) { %>
-          <a class="nav-link" href="/listings/new">Add New Listing</a>
+          <a class="nav-link" href="/listings/new">Add Listing</a>
+          <a class="nav-link" href="/wishlist">
+            <i class="fa-regular fa-heart" style="margin-right:4px"></i>Wishlist
+          </a>
+          <a class="nav-link" href="/dashboard">Dashboard</a>
+          <% if (currUser.isAdmin) { %>
+            <a class="nav-link" href="/dashboard/admin" style="color:#FF385C!important;font-weight:600">
+              <i class="fa-solid fa-shield-halved" style="margin-right:4px"></i>Admin
+            </a>
+          <% } %>
         <% } %>
       </div>
 
@@ -30,17 +42,10 @@
           <a class="nav-link" href="/signup">Sign up</a>
           <a class="nav-link" href="/login">Log in</a>
         <% } else { %>
-          <!-- Dashboard button -->
-          <a class="nav-link" href="/dashboard">
-            <i class="fa-solid fa-chart-line" style="margin-right:4px"></i>Dashboard
+          <span class="nav-link text-muted d-none d-md-block">Hi, <%= currUser.username %></span>
+          <a class="nav-link" href="/logout">
+            <i class="fa-solid fa-right-from-bracket" style="margin-right:4px"></i>Log out
           </a>
-          <% if (currUser.isAdmin) { %>
-            <a class="nav-link" href="/dashboard/admin" style="color:#FF385C !important; font-weight:600;">
-              <i class="fa-solid fa-shield-halved" style="margin-right:4px"></i>Admin
-            </a>
-          <% } %>
-          <span class="nav-link text-muted">Hi, <%= currUser.username %></span>
-          <a class="nav-link" href="/logout">Log out</a>
         <% } %>
       </div>
 

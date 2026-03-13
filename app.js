@@ -13,15 +13,8 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
-
-// ✅ Feature 8 (Security): Helmet — secure HTTP headers
 const helmet = require("helmet");
-
-// ✅ Feature 8 (Security): Rate limiting — prevent brute force
 const rateLimit = require("express-rate-limit");
-
-// ✅ Feature 8 (Security): Mongo sanitize — prevent NoSQL injection
-const mongoSanitize = require("express-mongo-sanitize");
 
 const User = require("./models/user");
 const listingRouter   = require("./routes/listing");
@@ -31,7 +24,7 @@ const aiRouter        = require("./routes/ai");
 const chatRouter      = require("./routes/chat");
 const bookingRouter   = require("./routes/bookings");
 const dashboardRouter = require("./routes/dashboard");
-const wishlistRouter  = require("./routes/wishlist"); // ✅ Feature 7
+const wishlistRouter  = require("./routes/wishlist");
 
 // ======================
 // DATABASE
@@ -51,9 +44,6 @@ app.set("views", path.join(__dirname, "views"));
 // ======================
 // SECURITY MIDDLEWARE
 // ======================
-
-// ✅ Feature 8: Helmet — sets 14 secure HTTP headers in one call
-// Content Security Policy configured to allow Bootstrap, Mapbox, Cloudinary etc.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -65,7 +55,7 @@ app.use(
           "https://api.mapbox.com",
           "https://js.stripe.com",
           "https://cdnjs.cloudflare.com",
-          "'unsafe-inline'", // needed for inline scripts in EJS
+          "'unsafe-inline'",
         ],
         styleSrc: [
           "'self'",
@@ -103,16 +93,16 @@ app.use(
   })
 );
 
-// ✅ Feature 8: Rate limiting on auth routes — max 20 attempts per 15 mins
+// Rate limiting — auth routes
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 20,
   message: "Too many login attempts. Please try again after 15 minutes.",
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// ✅ Feature 8: General API rate limit — max 100 req per 10 mins per IP
+// Rate limiting — general
 const generalLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 100,
@@ -130,9 +120,6 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Feature 8: Mongo sanitize — strips $ and . from req.body/params/query
-app.use(mongoSanitize());
-
 // ======================
 // SESSION
 // ======================
@@ -140,7 +127,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || "mysupersecretcode",
     resave: false,
-    saveUninitialized: false, // ✅ Changed to false — don't save empty sessions
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -179,7 +166,6 @@ app.get("/", (req, res) => res.redirect("/listings"));
 // ======================
 // ROUTES
 // ======================
-// ✅ Feature 8: Apply auth rate limiter to login/signup only
 app.use("/login",  authLimiter);
 app.use("/signup", authLimiter);
 
@@ -191,7 +177,7 @@ app.use("/chat", chatRouter);
 app.use("/bookings", bookingRouter);
 app.use("/listings/:id/bookings", bookingRouter);
 app.use("/dashboard", dashboardRouter);
-app.use("/wishlist", wishlistRouter); // ✅ Feature 7
+app.use("/wishlist", wishlistRouter);
 
 // ======================
 // ERROR HANDLING
@@ -210,4 +196,3 @@ app.use((err, req, res, next) => {
 // ======================
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
-f

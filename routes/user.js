@@ -61,11 +61,11 @@ router.post(
     const token = crypto.randomBytes(32).toString("hex");
 
     user.resetToken = token;
-    user.resetTokenExpiry = Date.now() + 1000 * 60 * 15; // 15 mins
+    user.resetTokenExpiry = Date.now() + 1000 * 60 * 15;
 
     await user.save();
 
-    console.log("RESET TOKEN:", token); // 🔥 For testing
+    console.log("RESET TOKEN:", token);
 
     req.flash("success", "Reset link generated. Check console.");
     res.redirect("/login");

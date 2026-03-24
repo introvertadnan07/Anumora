@@ -41,7 +41,7 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ✅ FIX: Trust Render's reverse proxy so secure cookies work
+// ✅ FIX: Trust Render's reverse proxy — required for secure cookies to work
 app.set("trust proxy", 1);
 
 // ======================
@@ -96,16 +96,16 @@ app.use(
   })
 );
 
-// Rate limiting — auth routes
+// Rate limiting — auth routes (max 20 per 15 mins)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  message: "Too many login attempts. Please try again after 15 minutes.",
+  message: "Too many attempts. Please try again after 15 minutes.",
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Rate limiting — general
+// Rate limiting — general (max 100 per 10 mins)
 const generalLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 100,
@@ -123,6 +123,9 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
+// NOTE: express-mongo-sanitize removed — incompatible with Express 5
+// Mongoose schema validation provides sufficient input protection
+
 // ======================
 // SESSION
 // ======================
@@ -133,10 +136,10 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // ✅ FIX: sameSite "none" required for cross-origin cookies on Render
       secure: process.env.NODE_ENV === "production",
+      // ✅ FIX: sameSite "none" required for Render cross-origin cookie handling
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     },
   })
 );

@@ -41,6 +41,9 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// ✅ FIX: Trust Render's reverse proxy so secure cookies work
+app.set("trust proxy", 1);
+
 // ======================
 // SECURITY MIDDLEWARE
 // ======================
@@ -130,7 +133,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
+      // ✅ FIX: sameSite "none" required for cross-origin cookies on Render
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })

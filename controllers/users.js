@@ -5,7 +5,6 @@ module.exports.renderSignupForm = (req, res) => {
   res.render("users/signup.ejs");
 };
 
-// ✅ FIX: Express 5 — wrap req.login in a Promise instead of callback
 module.exports.signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -13,14 +12,12 @@ module.exports.signup = async (req, res, next) => {
     const newUser = new User({ email, username });
     const registeredUser = await User.register(newUser, password);
 
-    // Send welcome email (non-blocking)
-    try {
-      await sendWelcomeEmail({ user: registeredUser });
-    } catch (emailErr) {
-      console.error("Welcome email failed:", emailErr.message);
-    }
+    // ✅ FIX: fire-and-forget — email never blocks or crashes signup
+    sendWelcomeEmail({ user: registeredUser }).catch((err) => {
+      console.error("Welcome email failed:", err.message);
+    });
 
-    // ✅ FIX: Promise-wrap req.login for Express 5 compatibility
+    // Promise-wrap req.login for Express 5 compatibility
     await new Promise((resolve, reject) => {
       req.login(registeredUser, (err) => {
         if (err) return reject(err);
@@ -46,7 +43,6 @@ module.exports.login = async (req, res) => {
   const redirectUrl = res.locals.redirectUrl || "/listings";
   res.redirect(redirectUrl);
 };
-
 
 module.exports.logout = async (req, res, next) => {
   try {

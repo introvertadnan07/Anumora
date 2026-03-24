@@ -47,7 +47,7 @@ module.exports.login = async (req, res) => {
   res.redirect(redirectUrl);
 };
 
-// ✅ FIX: Promise-wrap req.logout for Express 5 compatibility
+
 module.exports.logout = async (req, res, next) => {
   try {
     await new Promise((resolve, reject) => {

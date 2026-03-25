@@ -14,7 +14,7 @@ const userController = require("../controllers/users.js");
 router
   .route("/signup")
   .get(userController.renderSignupForm)
-  .post(wrapAsync(userController.signup));
+  .post(userController.signup); // ✅ FIX: removed wrapAsync — controller has its own try/catch
 
 // ======================
 // LOGIN
@@ -39,18 +39,14 @@ router.get("/logout", userController.logout);
 // ======================
 // FORGOT PASSWORD
 // ======================
-
-// Show forgot form
 router.get("/forgot", (req, res) => {
   res.render("users/forgot");
 });
 
-// Handle forgot
 router.post(
   "/forgot",
   wrapAsync(async (req, res) => {
     const { email } = req.body;
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -59,14 +55,11 @@ router.post(
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-
     user.resetToken = token;
     user.resetTokenExpiry = Date.now() + 1000 * 60 * 15;
-
     await user.save();
 
     console.log("RESET TOKEN:", token);
-
     req.flash("success", "Reset link generated. Check console.");
     res.redirect("/login");
   })
@@ -75,13 +68,10 @@ router.post(
 // ======================
 // RESET PASSWORD
 // ======================
-
-// Show reset form
 router.get(
   "/reset/:token",
   wrapAsync(async (req, res) => {
     const { token } = req.params;
-
     const user = await User.findOne({
       resetToken: token,
       resetTokenExpiry: { $gt: Date.now() },
@@ -96,7 +86,6 @@ router.get(
   })
 );
 
-// Handle reset
 router.post(
   "/reset/:token",
   wrapAsync(async (req, res) => {
@@ -114,10 +103,8 @@ router.post(
     }
 
     await user.setPassword(password);
-
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
-
     await user.save();
 
     req.flash("success", "Password reset successful");
